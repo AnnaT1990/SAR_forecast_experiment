@@ -43,15 +43,8 @@ class Alignment:
 		print(f'Alignment method: {transform_type}')
 		os.makedirs(self.out_path, exist_ok=True)
 
-		# Get start time
-		start_time = time.time()
-
 		if not (self.img1_path and self.img2_path and self.displacement_path) is None:
 			self.performAlignment(padding='constant', back_alignment=False)
-
-			# Measure execution time
-			exec_time = (time.time() - start_time) / 60.
-			print("Alignment finished in {:0.1f} minutes\n".format(exec_time))
 		else:
 			raise TypeError(
 				"Please specify all neccesseaury path to data (Image 1, Image 2 and a path to displacement data)")
@@ -60,12 +53,12 @@ class Alignment:
 		"""
 		Function for aligning two images given a deformation field and then save it to output path.
 		"""
-		
+
 		# Open first image and acquire raster as array
 		image1 = gdal.Open(str(self.img1_path))
 
 		# Open second  image and acquire raster as array
-		#image2 = gdal.Open(str(self.img1_path))
+		image2 = gdal.Open(str(self.img1_path))
 
 		# Get deformation data as original pixel locations in image1 and new pixel locations in image1
 		with open(self.displacement_path) as csvfile:
@@ -80,16 +73,19 @@ class Alignment:
 			# If coordinates are geocoded then convert them to image coordinates
 			if self.geocoded == True:
 				lm1 = LocationMapping(image1.GetGeoTransform(), image1.GetProjection())
-				#lm2 = LocationMapping(image2.GetGeoTransform(), image2.GetProjection())
+				lm2 = LocationMapping(image2.GetGeoTransform(), image2.GetProjection())
 				print('\nConvert geocoded cooridnates to raster coordinates...')
 				displacements = displacements[~np.any(np.isnan(displacements), axis=1), :]
+				print("checked fo nan")
 				displacements = displacements[~np.any(np.isinf(displacements), axis=1), :]
+				print("checked for inf")
 				orig_locs = displacements[:, [0, 1]] 
 				new_locs = displacements[:, [2, 3]]
 				c0, r0 = lm1.latLon2Raster( orig_locs[:,1].reshape( (-1) ), orig_locs[:,0].reshape( (-1) ) )
-				c1, r1 = lm1.latLon2Raster( new_locs[:,1].reshape( (-1) ), new_locs[:,0].reshape( (-1) ) )
+				c1, r1 = lm2.latLon2Raster( new_locs[:,1].reshape( (-1) ), new_locs[:,0].reshape( (-1) ) )
 				orig_locs = np.stack((c0, r0)).T
 				new_locs = np.stack((c1, r1)).T
+				#print("here are cordinates!", orig_locs, new_locs) #added as temporal test
 				print('Done.\n')
 			else:
 				# Select only not NaN data for displacements
@@ -107,6 +103,35 @@ class Alignment:
 			print(f'Done.')
 		else:
 			raise Exception(f'Sorry, {self.transform_type} transform is not implemented in the current version')
+
+		# # Acquire convex hulls
+		# print("Acquiring convex hulls.")
+		# maskOrig = None
+		# maskNew = None
+		# try:
+		# 	# Get convex hull of image 1
+		# 	ch = ConvexHull( new_locs )
+		# 	y, x = np.meshgrid( np.arange(rows1), np.arange(cols1) )
+		# 	y, x = np.transpose(y), np.transpose(x)
+		# 	x, y = x.flatten(), y.flatten()
+		# 	points = np.stack( (x,y), axis=1 )
+		# 	p = Path( new_locs[ch.vertices, :] )
+		# 	grid = p.contains_points( points )
+		# 	maskNew = grid.reshape(array2.shape)
+
+		# 	# Get convex hull of image 2
+		# 	ch = ConvexHull( orig_locs )
+		# 	y, x = np.meshgrid( np.arange(rows1), np.arange(cols1) )
+		# 	y, x = np.transpose(y), np.transpose(x)
+		# 	x, y = x.flatten(), y.flatten()
+		# 	points = np.stack( (x,y), axis=1 )
+		# 	p = Path( new_locs[ch.vertices, :] )
+		# 	grid = p.contains_points( points )
+		# 	maskOrig = grid.reshape(array2.shape)
+
+		# 	del ch, x, y, points, p, grid
+		# except:
+		# 	return 1
 
 		# Transform image1 raster array
 		try:
@@ -135,7 +160,7 @@ class Alignment:
 		except Exception as e:
 			print(str(e))
 			return 1
-		'''
+
 		# Transform image2 raster array
 		if self.transform_master == True:
 			try:
@@ -153,20 +178,19 @@ class Alignment:
 			pass
 
 		return 0
-		'''
 
 	def warping(self, path, image, trans, padding, displacement_path):
 		''' Perform warping of a pair of GeoTIFF files based on transformation '''
-		
+
 		# Create new geotiff file
 		#First, check if this file was already aligned and renamed to delete the old alignment time reference
 		filename = os.path.basename(path)
-		if not filename.startswith("Forecasted"):
-			new_path = f'{self.out_path}/Forecasted_{displacement_path[-15:-4]}_{os.path.basename(path)}'
-			print(f"A new name of the file is {new_path}") # added temporary as a test
-		if filename.startswith("Forecasted"):
+		if filename.startswith("Aligned"):
 			cut_filename = filename[20:]
-			new_path = f'{self.out_path}/Forecasted_{displacement_path[-15:-4]}_{cut_filename}'
+			new_path = f'{self.out_path}/Aligned_{displacement_path[-15:-4]}_{cut_filename}'
+			print(f"A new name of the file is {new_path}") # added temporary as a test
+		else:
+			new_path = f'{self.out_path}/Aligned_{displacement_path[-15:-4]}_{os.path.basename(path)}'
 			print(f"A new name of the file is {new_path}") # added temporary as a test
 
 		GTdriver = gdal.GetDriverByName('GTiff')
@@ -184,7 +208,7 @@ class Alignment:
 		array = np.zeros((image.RasterYSize, image.RasterXSize, image.RasterCount), dtype=float)
 
 		for iterBands in range(image.RasterCount):
-			
+
 			# Get current raster band
 			band = image.GetRasterBand(int(iterBands + 1))
 			# Get name of raster band
@@ -218,7 +242,7 @@ class Alignment:
 								lat[iterGridPoints] = float(cur_lat.text)
 								long[iterGridPoints] = float(cur_long.text)
 								ok_grid_points[iterGridPoints] = True
-						
+
 						# Map geolocation points
 						x, y = location_mapping.latLon2Raster(np.array(lat), np.array(long))
 						points = np.stack((x, y), axis=1)
@@ -243,10 +267,11 @@ class Alignment:
 				except Exception as e:
 					print(e)
 					return 1
-		
+
 		array[array == 0] = np.nan
 
 		array_warped = warp(array, trans, mode='constant')  # , mode = padding, cval = np.nan )
+
 		array_warped[array_warped == 0] = np.nan
 		# array_warped[~maskOrig] = np.nan
 

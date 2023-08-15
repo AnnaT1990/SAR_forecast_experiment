@@ -65,7 +65,7 @@ class Alignment:
 		image1 = gdal.Open(str(self.img1_path))
 
 		# Open second  image and acquire raster as array
-		image2 = gdal.Open(str(self.img1_path))
+		#image2 = gdal.Open(str(self.img1_path))
 
 		# Get deformation data as original pixel locations in image1 and new pixel locations in image1
 		with open(self.displacement_path) as csvfile:
@@ -80,17 +80,16 @@ class Alignment:
 			# If coordinates are geocoded then convert them to image coordinates
 			if self.geocoded == True:
 				lm1 = LocationMapping(image1.GetGeoTransform(), image1.GetProjection())
-				lm2 = LocationMapping(image2.GetGeoTransform(), image2.GetProjection())
+				#lm2 = LocationMapping(image2.GetGeoTransform(), image2.GetProjection())
 				print('\nConvert geocoded cooridnates to raster coordinates...')
 				displacements = displacements[~np.any(np.isnan(displacements), axis=1), :]
 				displacements = displacements[~np.any(np.isinf(displacements), axis=1), :]
 				orig_locs = displacements[:, [0, 1]] 
 				new_locs = displacements[:, [2, 3]]
 				c0, r0 = lm1.latLon2Raster( orig_locs[:,1].reshape( (-1) ), orig_locs[:,0].reshape( (-1) ) )
-				c1, r1 = lm2.latLon2Raster( new_locs[:,1].reshape( (-1) ), new_locs[:,0].reshape( (-1) ) )
+				c1, r1 = lm1.latLon2Raster( new_locs[:,1].reshape( (-1) ), new_locs[:,0].reshape( (-1) ) )
 				orig_locs = np.stack((c0, r0)).T
 				new_locs = np.stack((c1, r1)).T
-				#print("here are cordinates!", orig_locs, new_locs) #added as temporal test
 				print('Done.\n')
 			else:
 				# Select only not NaN data for displacements
@@ -108,35 +107,6 @@ class Alignment:
 			print(f'Done.')
 		else:
 			raise Exception(f'Sorry, {self.transform_type} transform is not implemented in the current version')
-
-		# # Acquire convex hulls
-		# print("Acquiring convex hulls.")
-		# maskOrig = None
-		# maskNew = None
-		# try:
-		# 	# Get convex hull of image 1
-		# 	ch = ConvexHull( new_locs )
-		# 	y, x = np.meshgrid( np.arange(rows1), np.arange(cols1) )
-		# 	y, x = np.transpose(y), np.transpose(x)
-		# 	x, y = x.flatten(), y.flatten()
-		# 	points = np.stack( (x,y), axis=1 )
-		# 	p = Path( new_locs[ch.vertices, :] )
-		# 	grid = p.contains_points( points )
-		# 	maskNew = grid.reshape(array2.shape)
-
-		# 	# Get convex hull of image 2
-		# 	ch = ConvexHull( orig_locs )
-		# 	y, x = np.meshgrid( np.arange(rows1), np.arange(cols1) )
-		# 	y, x = np.transpose(y), np.transpose(x)
-		# 	x, y = x.flatten(), y.flatten()
-		# 	points = np.stack( (x,y), axis=1 )
-		# 	p = Path( new_locs[ch.vertices, :] )
-		# 	grid = p.contains_points( points )
-		# 	maskOrig = grid.reshape(array2.shape)
-
-		# 	del ch, x, y, points, p, grid
-		# except:
-		# 	return 1
 
 		# Transform image1 raster array
 		try:
@@ -165,7 +135,7 @@ class Alignment:
 		except Exception as e:
 			print(str(e))
 			return 1
-
+		'''
 		# Transform image2 raster array
 		if self.transform_master == True:
 			try:
@@ -183,6 +153,7 @@ class Alignment:
 			pass
 
 		return 0
+		'''
 
 	def warping(self, path, image, trans, padding, displacement_path):
 		''' Perform warping of a pair of GeoTIFF files based on transformation '''
@@ -190,12 +161,12 @@ class Alignment:
 		# Create new geotiff file
 		#First, check if this file was already aligned and renamed to delete the old alignment time reference
 		filename = os.path.basename(path)
-		if not filename.startswith("Aligned"):
-			new_path = f'{self.out_path}/Aligned_{displacement_path[-15:-4]}_{os.path.basename(path)}'
+		if not filename.startswith("Forecasted"):
+			new_path = f'{self.out_path}/Forecasted_{displacement_path[-15:-4]}_{os.path.basename(path)}'
 			print(f"A new name of the file is {new_path}") # added temporary as a test
-		if filename.startswith("Aligned"):
+		if filename.startswith("Forecasted"):
 			cut_filename = filename[20:]
-			new_path = f'{self.out_path}/Aligned_{displacement_path[-15:-4]}_{cut_filename}'
+			new_path = f'{self.out_path}/Forecasted_{displacement_path[-15:-4]}_{cut_filename}'
 			print(f"A new name of the file is {new_path}") # added temporary as a test
 
 		GTdriver = gdal.GetDriverByName('GTiff')

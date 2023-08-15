@@ -88,11 +88,11 @@ class LocationMapping:
         '''
             Map from lat long coordinates to raster points
         '''
-        #print("Check if coordinates are transformed right. If numbers doesn't make sense, it is due to gdal version. Install a different version or go to ./tools/geolocation_grid/LocationMapping.py and swap x and y in latLon2Raster function in 'self.mapFromProj2Raster(y, x )'\nMin lat and long:",  np.nanmin(lat), np.nanmin(long) )
+        print("Check if coordinates are transformed right. \nIf numbers doesn't make sense, it is due gdal version. \nInstall a different version or go to ./tools/geolocation_grid/LocationMapping.py and swap x and y in latLon2Raster function in 'self.mapFromProj2Raster(y, x )'\nMin lat and long:",  np.nanmin(lat), np.nanmin(long) )
         x, y = self.mapFromCoords2Proj(lat,long)
-        #print("Min x and y", np.nanmin(x),np.nanmin(y))
-        #x, y = self.mapFromProj2Raster(y, x ) #swaped x and y 
-        print("Min rows and columns", np.nanmin(x),np.nanmin(y))
+        print("Min x and y", np.nanmin(x),np.nanmin(y))
+        x, y = self.mapFromProj2Raster(y, x ) #swaped x and y 
+        print("Min xand y", np.nanmin(x),np.nanmin(y))
         
 
         return (x, y)

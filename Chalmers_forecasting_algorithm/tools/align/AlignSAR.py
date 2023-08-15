@@ -162,11 +162,11 @@ class Alignment:
 		#First, check if this file was already aligned and renamed to delete the old alignment time reference
 		filename = os.path.basename(path)
 		if not filename.startswith("Forecasted"):
-			new_path = f'{self.out_path}/Forecasted_{displacement_path[-15:-4]}_{os.path.basename(path)}'
+			new_path = f'{self.out_path}/Forecasted_{displacement_path[-24:-13]}_{os.path.basename(path)}'
 			print(f"A new name of the file is {new_path}") # added temporary as a test
 		if filename.startswith("Forecasted"):
 			cut_filename = filename[20:]
-			new_path = f'{self.out_path}/Forecasted_{displacement_path[-15:-4]}_{cut_filename}'
+			new_path = f'{self.out_path}/Forecasted_{displacement_path[-24:-13]}_{cut_filename}'
 			print(f"A new name of the file is {new_path}") # added temporary as a test
 
 		GTdriver = gdal.GetDriverByName('GTiff')

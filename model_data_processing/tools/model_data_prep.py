@@ -317,28 +317,6 @@ def displacement_lon2lat2_to_csv(output_dir, int_lon, int_lat, time_period):
             out.writerows(points)
             
 
-'''
-def proj_to_lonlat(xx, yy, model_proj4):
-    
-    int_lon = []
-    int_lat = []
-
-    for i in range(len(xx)):
-        inputEPSG = 4326
-        crs = osr.SpatialReference()
-        crs.ImportFromEPSG(inputEPSG)
-
-        model_srs = osr.SpatialReference()
-        #use lambert projection from metadata
-        model_srs.ImportFromProj4(model_proj4)
-
-        trans = osr.CoordinateTransformation(model_srs,crs)
-        points = np.stack( (xx[i],yy[i]), axis = 1 )
-        pos = trans.TransformPoints( points )
-        lat,lon = ( np.array( [elem[0] for elem in pos] ), np.array( [elem[1] for elem in pos] ) )
-        int_lon.append(lon)
-        int_lat.append(lat)
-'''
         
 def transform_to_geographic_coordinates(xx, yy, model_proj4_string):
     """

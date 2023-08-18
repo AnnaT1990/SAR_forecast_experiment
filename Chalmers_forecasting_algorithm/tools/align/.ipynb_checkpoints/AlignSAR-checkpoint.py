@@ -38,6 +38,7 @@ class Alignment:
 		self.out_path = out_path
 		self.transform_master = transform_master
 		self.geocoded = geocoded
+		self.export = export
 		self.proj = proj
 
 		print(f'Alignment method: {transform_type}')
@@ -90,6 +91,8 @@ class Alignment:
 				c1, r1 = lm1.latLon2Raster( new_locs[:,1].reshape( (-1) ), new_locs[:,0].reshape( (-1) ) )
 				orig_locs = np.stack((c0, r0)).T
 				new_locs = np.stack((c1, r1)).T
+ 
+                    
 				print('Done.\n')
 			else:
 				# Select only not NaN data for displacements
@@ -97,7 +100,7 @@ class Alignment:
 				displacements = displacements[~np.any(np.isinf(displacements), axis=1), :]
 				orig_locs = displacements[:, [0, 1]]
 				new_locs = displacements[:, [2, 3]] + orig_locs
-
+                
 		# Acquire transformation given by deformation
 		if self.transform_type == "piecewise-affine":
 			print(f'\nEstimating {self.transform_type} transformation...')

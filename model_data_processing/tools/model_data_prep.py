@@ -169,6 +169,95 @@ def cumulative_ice_displacement(X, Y, ice_u, ice_v, time_period, time_diff_start
             
     return xx, yy, int_dx, int_dy
 
+
+def cumulative_ice_disp_nextsim(X, Y, ice_u, ice_v, time_period, time_diff_start, time_diff_end):
+    """
+    Computes the integrated displacement along the x and y axes for each hour (or its fraction) of the forecasting  time period for nextsim model.
+    The calculation for each hour is cumulative. For instance, the displacement value at the 1st hour represents the displacement 
+    for that hour alone, while the value at the 5th hour represents the cumulative displacement over the first five hours.
+    Such displacmeents are intended for drift-driven warping
+    
+    This function also derives the hourly coordinates (xx and yy) in the Lagrangian reference frame, where the model coordinates 
+    X and Y serve as the starting grid coordinates.
+
+    Parameters:
+    - X, Y (DataArray): Cartesian coordinates from the model or its subset.
+    - ice_u, ice_v (DataArray): Ice velocities along the x and y axes, respectively.
+    - time_period (DataArray): The input xarray model time period.
+    - time_diff_start (int): Time difference in seconds between SAR1 and the start of the model time period.
+    - time_diff_end (int): Time difference in seconds between SAR2 and the end of the model time period.
+
+    Returns: 
+    - xx, yy (list): Lists of coordinates corresponding to each timestamp in the time period. The lengths of xx and yy are equivalent to len(time_period).
+    - int_dx, int_dy (list): Lists of total cumulative displacements for each hour of the time period. The lengths of int_dx and int_dy are len(time_period) - 1.
+    """
+
+
+    # Create coordinate arrays  
+    x_sub, y_sub = np.meshgrid(X, Y)
+    # Turn arrays into vectors
+    x_sub = x_sub.flatten()
+    y_sub = y_sub.flatten()
+
+    # Store the selected coordinate arrays in lists to collect arrays from different iterationsfor further processing
+    xx = [x_sub]
+    yy = [y_sub]
+
+    #Prepare lsit for integrated drift for comparison with model
+    int_dx = []
+    int_dy = []
+
+    for t in range(len(time_period)):
+        print(f'{t} hour done')
+        u = ice_u.sel(time=time_period[t])#
+        
+        v = ice_v.sel(time=time_period[t])
+   
+        # Calculate displacement along lon (u) and lat (v) based on mean velovity
+        # The first and the last displacemnets are calculated differently based on time difference with the SAR acquisitions
+        if t == 0:
+            u_displacement = (u)*(3600-time_diff_start)
+            v_displacement = (v)*(3600-time_diff_start)
+            #print("start", t, u_displacement.values)
+        elif t in range(1, len(time_period)-1):
+            u_displacement = (u)*3600
+            v_displacement = (v)*3600
+            #print(t, u_displacement.values)
+        elif t == len(time_period)-1:
+            u_displacement = (u)*(3600-time_diff_end)
+            v_displacement = (v)*(3600-time_diff_end)
+            #print("end", t, u_displacement.values)
+
+        # Create interpolator object with grid coordinates and corresponded drift values
+        ut_interpolator = RegularGridInterpolator((Y.data,X.data), u_displacement.data, bounds_error=False, fill_value = None)
+        dx = ut_interpolator((y_sub, x_sub))
+        #print("dx", dx)
+        vt_interpolator = RegularGridInterpolator((Y.data,X.data), v_displacement.data, bounds_error=False, fill_value = None)
+        dy = vt_interpolator((y_sub, x_sub)) 
+        #print("dy", dy)
+        # Calculate new coordinates based on displacement 
+        x_sub = x_sub + dx
+        y_sub = y_sub + dy
+        # Append them to the list
+        xx.append(x_sub)
+        yy.append(y_sub)
+
+
+        #Calculate total integrated drift
+        if t == 0:
+            dx_total = dx
+            dy_total = dy
+            int_dx.append(dx_total)
+            int_dy.append(dy_total)
+        else:
+            dx_total = int_dx[-1] + dx
+            dy_total = int_dy[-1] + dy
+            int_dx.append(dx_total)
+            int_dy.append(dy_total)
+            
+    return xx, yy, int_dx, int_dy
+
+
 def non_cumulative_ice_displacement(X, Y, ice_u, ice_v, time_period, time_diff_start, time_diff_end):
     """
      Computes average displacement along the x and y axes for each hour (or its fraction) of the forecasting time period.

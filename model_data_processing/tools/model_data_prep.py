@@ -119,11 +119,11 @@ def cumulative_ice_displacement(X, Y, ice_u, ice_v, time_period, time_diff_start
         #x_stp = np.clip(x_stp, np.min(X_stp.data), np.max(X_stp.data))
 
         # Extract instantaneous velocity data for the hour start and end using polygon mask for area of interest
-        u1 = ice_u.sel(time=time_period[t-1])#.where(finalMask>0)
-        u2 = ice_u.sel(time=time_period[t])#.where(finalMask>0)
+        u1 = ice_u.sel(time=time_period[t-1])
+        u2 = ice_u.sel(time=time_period[t])
 
-        v1 = ice_v.sel(time=time_period[t-1])#.where(finalMask>0)
-        v2 = ice_v.sel(time=time_period[t])#.where(finalMask>0)
+        v1 = ice_v.sel(time=time_period[t-1])
+        v2 = ice_v.sel(time=time_period[t])
 
         # Calculate displacement along lon (u) and lat (v) based on mean velovity
         # The first and the last displacemnets are calculated differently based on time difference with the SAR acquisitions

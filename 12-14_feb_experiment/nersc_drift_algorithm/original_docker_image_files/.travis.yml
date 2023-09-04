@@ -1,0 +1,20 @@
+language: python
+
+before_install:
+  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O $HOME/miniconda.sh
+  - chmod +x $HOME/miniconda.sh
+  - $HOME/miniconda.sh -b -f -p $HOME/miniconda
+  - export PATH=$HOME/miniconda/bin:$PATH
+  - wget https://github.com/nansencenter/sea_ice_drift_test_files/raw/master/S1B_EW_GRDM_1SDH_20200123T120618.tif
+  - wget https://github.com/nansencenter/sea_ice_drift_test_files/raw/master/S1B_EW_GRDM_1SDH_20200125T114955.tif
+  - export ICE_DRIFT_TEST_DATA_DIR=./
+
+install:
+  - conda create -q --yes -n test-environment -c conda-forge numpy scipy matplotlib netcdf4 gdal=2.4.2 opencv mock nose coverage
+  - source activate test-environment
+  - python setup.py install
+
+script:
+  - coverage run --source=sea_ice_drift --omit=sea_ice_drift/tests.py setup.py test
+
+

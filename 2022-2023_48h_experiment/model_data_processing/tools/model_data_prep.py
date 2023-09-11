@@ -452,7 +452,7 @@ def transform_to_geographic_coordinates(xx, yy, model_proj4_string):
     return lon_list, lat_list
 
 def rolling_avg_24_ensembles(datasets, start_time, end_time, subset = False):
-    
+    # Fic subset!! if you want to have it, add r and c variables
     """
     Compute hourly ensemble averages of ice drift velocities over a given time range.
 

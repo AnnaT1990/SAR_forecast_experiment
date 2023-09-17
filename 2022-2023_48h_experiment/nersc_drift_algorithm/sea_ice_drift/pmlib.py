@@ -114,12 +114,15 @@ def get_template(img, c, r, a, s, rot_order=0, **kwargs):
 
     return t
 
+
 def rotate_and_match(img1, c1, r1, img_size, image2, alpha0,
                      angles=[-3,0,3],
                      mtype=cv2.TM_CCOEFF_NORMED,
                      template_matcher=cv2.matchTemplate,
                      mcc_norm=False,
                      **kwargs):
+    
+    
     ''' Rotate template in a range of angles and run MCC for each
     Parameters
     ----------
@@ -170,6 +173,7 @@ def rotate_and_match(img1, c1, r1, img_size, image2, alpha0,
 
     if mcc_norm:
         best_r = (best_r - np.median(best_result)) / np.std(best_result)
+    
 
     return dc, dr, best_a, best_r, best_h, best_result, best_template
 

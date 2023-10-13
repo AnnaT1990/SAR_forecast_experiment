@@ -2,7 +2,7 @@
 # Purpose: Container of Feature Tracking functions
 # Authors:      Anton Korosov, Stefan Muckenhuber
 # Created:      21.09.2016
-# Copyright:    (c) NERSC 2016
+# Copyright:    (c) NERSC feature_tracking
 # Licence:
 # This file is part of SeaIceDrift.
 # SeaIceDrift is free software: you can redistribute it and/or modify

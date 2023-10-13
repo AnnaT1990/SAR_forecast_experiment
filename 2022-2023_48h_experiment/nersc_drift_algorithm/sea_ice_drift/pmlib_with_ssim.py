@@ -398,6 +398,8 @@ def pattern_matching(lon_pm1, lat_pm1,
             Maximum cross correlation (MCC)
         h : 1D vector
             Hessian of CC at MCC point
+        best_ssim : 1D vector
+            Best similarity index between the two images for each point.
         lon2_dst : 1D vector
             longitude of results on image 2
         lat2_dst : 1D vector

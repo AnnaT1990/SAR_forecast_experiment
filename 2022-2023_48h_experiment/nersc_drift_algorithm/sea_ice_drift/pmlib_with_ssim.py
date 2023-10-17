@@ -157,7 +157,7 @@ def rotate_and_match(img1, c1, r1, img_size, image2, alpha0,
         template = get_template(img1, c1, r1, angle-alpha0, img_size, **kwargs)
         if ((template.min() == 0) or
             (template.shape[0] < img_size or template.shape[1] < img_size)):
-            return np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
+            return np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
 
         result = template_matcher(image2, template, mtype)
 
@@ -170,15 +170,17 @@ def rotate_and_match(img1, c1, r1, img_size, image2, alpha0,
             best_template = template
             best_ij = ij
 
+    
     best_h = get_hessian(best_result, **kwargs)[best_ij]
     dr = best_ij[0] - (image2.shape[0] - template.shape[0]) / 2.
     dc = best_ij[1] - (image2.shape[1] - template.shape[1]) / 2.
 
+    # Now, after finding the best match using cross-correlation, compute SSIM
+    best_ssim = compare_ssim(best_template, image2[best_ij[0]:best_ij[0]+img_size, best_ij[1]:best_ij[1]+img_size], data_range=image2.max() - image2.min())
+    
     if mcc_norm:
         best_r = (best_r - np.median(best_result)) / np.std(best_result)
     
-    # Now, after finding the best match using cross-correlation, compute SSIM
-    best_ssim = compare_ssim(best_template, image2[best_ij[0]:best_ij[0]+img_size, best_ij[1]:best_ij[1]+img_size], data_range=image2.max() - image2.min())
 
     return dc, dr, best_a, best_r, best_h, best_result, best_template, best_ssim 
 
@@ -254,9 +256,9 @@ def use_mcc_mp(i):
 
     
     if i % 100 == 0:
-        print('%02.0f%% %07.1f %07.1f %07.1f %07.1f %+05.1f %04.2f %04.2f' % (
+        print('%02.0f%% %07.1f %07.1f %07.1f %07.1f %+05.1f %04.2f %04.2f %04.2f' % (
             100 * float(i) / len(shared_args[0]),
-            shared_args[0][i], shared_args[1][i], c2, r2, a, r, h), end='\r')
+            shared_args[0][i], shared_args[1][i], c2, r2, a, r, h, best_ssim), end='\r')
     return c2, r2, a, r, h, best_ssim
 
 def prepare_first_guess(c2pm1, r2pm1, n1, c1, r1, n2, c2, r2, img_size,

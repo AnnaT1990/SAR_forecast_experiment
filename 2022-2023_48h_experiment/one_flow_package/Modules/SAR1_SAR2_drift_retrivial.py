@@ -347,7 +347,11 @@ def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessia
     axs[1].set_ylim([200000, 600000])
     axs[2].set_xlim([300000, 600000])
     axs[2].set_ylim([200000, 600000])
-
+    
+    # Set background color to white
+    ax.set_facecolor('white')
+    fig.set_facecolor('white')
+    
     plt.tight_layout
 
     # Save the figure without displaying it

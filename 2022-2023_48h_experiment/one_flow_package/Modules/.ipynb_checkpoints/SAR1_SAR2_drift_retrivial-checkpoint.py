@@ -67,7 +67,9 @@ def run_feature_tracking(n1, n2, plots_dir):
     land_50m = cfeature.NaturalEarthFeature('physical', 'land', '50m',
                                             edgecolor='face',
                                             facecolor=cfeature.COLORS['land'])
-
+    
+    plt.close('all')
+    
     fig, ax = plt.subplots(1,2, figsize=(10,10))
     ax = plt.axes(projection=ccrs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70))
     ax.add_feature(land_50m, zorder=0, edgecolor='black')
@@ -310,3 +312,70 @@ def get_good_pixel_indices(hpm, h_threshold, neighbors_threshold):
     
     return gpi1, gpi2
 
+def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessian, neighbors):
+    
+    u = upm/1000 
+    v = vpm/1000 
+    disp = np.sqrt((v**2+u**2))
+    
+    plt.close('all')
+    fig, axs = plt.subplots(1,3, figsize=(30,10)) 
+    
+    gpi = (hpm>0)
+
+    quiv_params = {
+        'scale': 900,
+        'cmap': 'jet',
+        'width': 0.002,
+        'headwidth': 3
+    }
+
+    quiv1 = axs[0].quiver(x[gpi][::1], y[gpi][::1], u[gpi][::1], v[gpi][::1], disp[gpi][::1], **quiv_params)
+    quiv2 = axs[1].quiver(x[gpi1][::1], y[gpi1][::1], u[gpi1][::1], v[gpi1][::1], disp[gpi1][::1], **quiv_params)
+    quiv3 = axs[2].quiver(x[gpi2][::1], y[gpi2][::1], u[gpi2][::1], v[gpi2][::1], disp[gpi2][::1], **quiv_params)
+
+
+    axs[0].set_title(f'Ice Drift Dispalcement before filtering [km]\n{np.sum(gpi.data)} values')
+    axs[1].set_title(f'Ice Drift Displacement with hessian > {hessian} [km]\n{np.sum(gpi1.data)} values')
+    axs[2].set_title(f'Ice Drift Displacement with hessian > {hessian} and neighbors > {neighbors} [km]\n{np.sum(gpi2.data)} values')
+
+    plt.colorbar(quiv1, ax=axs, orientation='vertical', shrink=0.9)
+
+    axs[0].set_xlim([300000, 600000])
+    axs[0].set_ylim([200000, 600000])
+    axs[1].set_xlim([300000, 600000])
+    axs[1].set_ylim([200000, 600000])
+    axs[2].set_xlim([300000, 600000])
+    axs[2].set_ylim([200000, 600000])
+
+    plt.tight_layout
+
+    # Save the figure without displaying it
+    general_save_path = os.path.join(output_dir_name, "General_plots")
+    os.makedirs(general_save_path, exist_ok=True)
+    save_path = os.path.join(general_save_path, f"Filtering_results_h{hessian}_n{neighbors}.png")
+    fig.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+    
+
+def save_sar_drift_results(output_dir_name, save_name, upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm, gpi1, gpi2):
+    
+    # Save final reference drift parameters
+
+    sar_drift_path = os.path.join(output_dir_name, f"{save_name}")
+    os.makedirs(sar_drift_path, exist_ok=True)    
+    
+    # Define the path for the .npz file
+    save_path = os.path.join(sar_drift_path, f"{save_name}.npz")
+    
+    # Save the arrays into the .npz file
+    np.savez(save_path, upm=upm, vpm=vpm, apm=apm, rpm=rpm, hpm=hpm, 
+             ssim=ssim, lon2pm=lon2pm, lat2pm=lat2pm, gpi1=gpi1, gpi2=gpi2)
+    
+    print(f"Arrays saved to {save_path}")
+    
+    return save_path
+
+
+    
+    

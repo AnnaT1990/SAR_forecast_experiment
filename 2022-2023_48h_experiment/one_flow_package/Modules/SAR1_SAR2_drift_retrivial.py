@@ -395,7 +395,7 @@ def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessia
     axs[2].set_ylim([200000, 600000])
     
     # Set background color to white
-    ax.set_facecolor('white')
+    #ax.set_facecolor('white')
     fig.set_facecolor('white')
     
     plt.tight_layout
@@ -407,7 +407,7 @@ def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessia
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
     
-    return = general_save_path
+    return general_save_path
 
 def save_sar_drift_results(output_dir_name, save_name, **kwargs):
     

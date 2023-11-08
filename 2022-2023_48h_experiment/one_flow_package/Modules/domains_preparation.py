@@ -41,7 +41,8 @@ def prepare_nansat_objects(sar1, sar2, output_folder, polarisation):
     
     f1 = sar1.filepath  
     f2 = sar2.filepath
-
+    
+    
     n1 = get_n(f1, bandName= f'sigma0_{polarisation}', remove_spatial_mean=True) 
     n2 = get_n(f2, bandName= f'sigma0_{polarisation}', remove_spatial_mean=True)
     

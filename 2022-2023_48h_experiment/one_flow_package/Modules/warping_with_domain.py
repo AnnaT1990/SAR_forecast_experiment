@@ -84,11 +84,22 @@ def warp_with_uv(src_dom, src_img, uv_dom, u, v, mask, dst_dom):
 
 
 # Functions for plotting warping results
-
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import gc
+
+
+def normalize(array):
+    """Normalize an array to the range [0, 1]."""
+    array_min = array.min()
+    array_max = array.max()
+    return (array - array_min) / (array_max - array_min)
+
+def gamma_correction(image, gamma):
+    """Apply gamma correction to an image."""
+    return image ** (1.0 / gamma)
+
 
 def plot_sar_forecast_images(general_save_path, file_name, s1_dst_dom_hv, s2_dst_dom_hv, s1_dst_dom_S_hv, s1_dst_dom_hh, s2_dst_dom_hh, s1_dst_dom_S_hh, gamma_value=1.2):
     """
@@ -141,7 +152,7 @@ def plot_sar_forecast_images(general_save_path, file_name, s1_dst_dom_hv, s2_dst
 
     fig.set_facecolor('white')
     plt.tight_layout()
-    plt.show()
+    #plt.show()
 
     # Save the figure
     save_path = os.path.join(general_save_path, f"{file_name}.png")

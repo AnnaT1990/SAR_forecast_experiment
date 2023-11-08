@@ -110,7 +110,7 @@ def run_feature_tracking(n1, n2, plots_dir):
     return c1, r1, c2, r2
 
 
-
+'''
 def run_pattern_matching(plots_dir, x, y, lon1pm, lat1pm, n1, c1, r1, n2, c2, r2, srs, **kwargs):
     
     upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm = pattern_matching(lon1pm, lat1pm, n1, c1, r1, n2, c2, r2,
@@ -149,7 +149,53 @@ def run_pattern_matching(plots_dir, x, y, lon1pm, lat1pm, n1, c1, r1, n2, c2, r2
     plt.close(fig)
     
     
-    return upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm 
+    return upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm
+'''
+
+def run_pattern_matching(plots_dir, x, y, lon1pm, lat1pm, n1, c1, r1, n2, c2, r2, srs, **kwargs):
+    # Assume pattern_matching is defined elsewhere and returns the necessary values
+    upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm = pattern_matching(lon1pm, lat1pm, n1, c1, r1, n2, c2, r2,
+                                                                     srs=srs.ExportToProj4(), **kwargs)
+
+    # Plot main parameters
+    plt.close('all')
+    fig, ax = plt.subplots(2, 3, figsize=(20, 10))
+    titles = ['Displacement X', 'Displacement Y', 'Rotation', 'Correlation', 'Hessian', 'SSIM']
+    ax = ax.flatten()
+
+    for i, matrix in enumerate([upm, vpm, apm, rpm, hpm, ssim]):
+        ax[i].set_title(titles[i])
+        ax[i].set_facecolor('white')
+        im = ax[i].imshow(matrix, extent=[x.min(), x.max(), y.min(), y.max()])
+        plt.colorbar(im, ax=ax[i])
+        ax[i].set_xlim([x.min()-10000, x.max()-210000])
+        ax[i].set_ylim([y.min()+110000, y.max()-160000])
+        xticks = ax[i].get_xticks()
+        ax[i].set_xticks(xticks[::2])
+    
+    plt.tight_layout()
+    fig.set_facecolor('white')
+
+    # Save the combined figure
+    save_path = os.path.join(plots_dir, "Pattern_matching_output_parameters.png")
+    fig.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+    # Save separate plots for Correlation, Hessian, and SSIM
+    for i, matrix in enumerate([hpm, ssim]):
+        plt.figure(figsize=(8, 8))
+        plt.title(titles[i+4])  # 4 is the starting index for Correlation, Hessian, and SSIM in titles
+        plt.imshow(matrix, extent=[x.min(), x.max(), y.min(), y.max()])
+        plt.colorbar()
+        plt.xlim([x.min()-10000, x.max()-210000])
+        plt.ylim([y.min()+110000, y.max()-160000])
+        plt.tight_layout()
+        single_save_path = os.path.join(plots_dir, f"{titles[i+4].replace(' ', '_')}_plot.png")
+        plt.savefig(single_save_path, dpi=300, bbox_inches='tight')
+        plt.close()
+
+    return upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm
+    
 
 def combine_hh_hv(output_dir_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh,
                   upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv):
@@ -361,20 +407,19 @@ def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessia
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
     
+    return = general_save_path
 
-def save_sar_drift_results(output_dir_name, save_name, upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm, gpi1, gpi2):
+def save_sar_drift_results(output_dir_name, save_name, **kwargs):
     
     # Save final reference drift parameters
-
-    sar_drift_path = os.path.join(output_dir_name, f"{save_name}")
+    sar_drift_path = os.path.join(output_dir_name, save_name)
     os.makedirs(sar_drift_path, exist_ok=True)    
     
     # Define the path for the .npz file
     save_path = os.path.join(sar_drift_path, f"{save_name}.npz")
     
     # Save the arrays into the .npz file
-    np.savez(save_path, upm=upm, vpm=vpm, apm=apm, rpm=rpm, hpm=hpm, 
-             ssim=ssim, lon2pm=lon2pm, lat2pm=lat2pm, gpi1=gpi1, gpi2=gpi2)
+    np.savez(save_path, **kwargs)
     
     print(f"Arrays saved to {save_path}")
     

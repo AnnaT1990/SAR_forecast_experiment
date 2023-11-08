@@ -81,3 +81,69 @@ def warp_with_uv(src_dom, src_img, uv_dom, u, v, mask, dst_dom):
     inp_img[:, -1] = 0
     dst_img = warp_with_lonlat(src_dom, inp_img, lon1uv[~mask], lat1uv[~mask], lon2uv, lat2uv, dst_dom)
     return dst_img
+
+
+# Functions for plotting warping results
+
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import gc
+
+def plot_sar_forecast_images(general_save_path, file_name, s1_dst_dom_hv, s2_dst_dom_hv, s1_dst_dom_S_hv, s1_dst_dom_hh, s2_dst_dom_hh, s1_dst_dom_S_hh, gamma_value=1.2):
+    """
+    Plot and save SAR forecast images.
+
+    Parameters:
+    - general_save_path: Path to save the images.
+    - file_name: The base name for the saved files.
+    - s1_dst_dom_hv, s2_dst_dom_hv, s1_dst_dom_S_hv, s1_dst_dom_hh, s2_dst_dom_hh, s1_dst_dom_S_hh: Arrays representing different channels of SAR data for SAR1, SAR2 and SAR2_forecasted.
+    - gamma_value: The gamma correction value; defaults to 1.2.
+    """
+    # Normalize and apply gamma correction
+    s1_hv_gamma_corrected = gamma_correction(normalize(s1_dst_dom_hv), gamma_value)
+    s2_hv_gamma_corrected = gamma_correction(normalize(s2_dst_dom_hv), gamma_value)
+    s1_predicted_hv_gamma_corrected = gamma_correction(normalize(s1_dst_dom_S_hv), gamma_value)
+    s1_hh_gamma_corrected = gamma_correction(normalize(s1_dst_dom_hh), gamma_value)
+    s2_hh_gamma_corrected = gamma_correction(normalize(s2_dst_dom_hh), gamma_value)
+    s1_predicted_hh_gamma_corrected = gamma_correction(normalize(s1_dst_dom_S_hh), gamma_value)
+
+    # Create an empty blue channel
+    blue_channel1 = np.zeros_like(s1_hv_gamma_corrected)
+    blue_channel2 = np.zeros_like(s2_hv_gamma_corrected)
+    blue_channel3 = np.zeros_like(s1_predicted_hv_gamma_corrected)
+
+    # Stack the channels to make composite RGB images
+    rgb_image1 = np.stack([s1_hv_gamma_corrected, s1_hh_gamma_corrected, blue_channel1], axis=-1)
+    rgb_image2 = np.stack([s2_hv_gamma_corrected, s2_hh_gamma_corrected, blue_channel2], axis=-1)
+    rgb_image3 = np.stack([s1_predicted_hv_gamma_corrected, s1_predicted_hh_gamma_corrected, blue_channel3], axis=-1)
+
+    # Memory cleanup
+    del s1_hv_gamma_corrected, s2_hv_gamma_corrected, s1_predicted_hv_gamma_corrected
+    del s1_hh_gamma_corrected, s2_hh_gamma_corrected, s1_predicted_hh_gamma_corrected
+    del blue_channel1, blue_channel2, blue_channel3
+    gc.collect()
+
+    # Display the composite images
+    fig, axs = plt.subplots(1, 3, figsize=(20, 8))
+    axs[0].imshow(rgb_image1)
+    axs[1].imshow(rgb_image3)
+    axs[2].imshow(rgb_image2)
+    axs[0].set_title('SAR1')
+    axs[1].set_title('SAR2 Predicted')
+    axs[2].set_title('SAR2')
+
+    # Set common limits for all subplots and background color to white
+    for ax in axs:
+        ax.set_xlim([0, 3200])
+        ax.set_ylim([6100, 1700])
+        ax.set_facecolor('white')
+
+    fig.set_facecolor('white')
+    plt.tight_layout()
+    plt.show()
+
+    # Save the figure
+    save_path = os.path.join(general_save_path, f"{file_name}.png")
+    fig.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)

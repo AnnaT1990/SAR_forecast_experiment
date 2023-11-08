@@ -30,6 +30,7 @@ path_to_HV_files = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_im
 
 # Directory containing the SAFE formatted Sentinel-1 images
 safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe_test'
+safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe'
 
 output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/batch_output'
 

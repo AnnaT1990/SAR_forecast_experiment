@@ -27,7 +27,7 @@ import s1_preparation
 import domains_preparation
 import SAR1_SAR2_drift_retrivial
 import warping_with_domain
-import model_data_proces
+import model_data_processing
 
 # Import variables
 from config import path_to_HH_files, path_to_HV_files, safe_folder 
@@ -77,7 +77,7 @@ dst_res = 100
 dst_dom = None  # Initialize to None
 
 #Initialize a JohannesroThredds object to interface with the specified THREDDS dataset.
-jt = model_data_proces.JohannesroThredds()
+jt = model_data_processing.JohannesroThredds()
 
 # Loop over all pairs and use enumerate to get an index for each pair
 for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-friendly indexing
@@ -142,6 +142,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     rows1, cols1 = mod_dom.shape()
     print("mod_dom corner coordinates:", mod_dom.transform_points([0,cols1-1,0,cols1-1], [0,0,rows1-1,rows1-1], dst_srs=srs))
     
+    print("1. Nansat objects created,  model and comparison domains defined.")
     #======================================================================
     # 3.   Retrieve SAR reference drift
     #----------------------------------------------------------------------
@@ -205,6 +206,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                              hpm=hpm, ssim=ssim, lon2pm=lon2pm, 
                                                                              lat2pm=lat2pm, gpi1=gpi1, gpi2=gpi2)
     
+    print("2. SAR reference drift Retrieved")
     #======================================================================
     # 4. Warp SAR1 image with the reference SAR drift and compare all SARs in the comparison domain
     #----------------------------------------------------------------------
@@ -234,8 +236,10 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                  s1_dst_dom_hh, s2_dst_dom_hh, s1_dst_dom_S_hh,
                                                  gamma_value=1.2)
     
+    print("3. Warped SAR1 image with the reference SAR drift.")
+        
     #======================================================================
-    # 5. Calculate quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matchin on SAR2 and SAR2_predicted)
+    # 5. Calculate quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted)
     #----------------------------------------------------------------------
     
     # 5.1. Make new nansat objects for comparison
@@ -273,56 +277,57 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                              lat2pm=lat2pm_alg_hv, gpi1=gpi1, gpi2=gpi2)
 
 
-
+    print("4. Calculated quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted.")
     #======================================================================
-    # 5. Prepare model data for retrieving drift fields.
+    # 6. Prepare model data for retrieving drift fields.
     #----------------------------------------------------------------------
     
-    # 5.1.xtract time period based on teh SAR pair timestamp
+    # 6.1.xtract time period based on teh SAR pair timestamp
     
     # SAR images timestamps
     t_sar1 = pair[0].timestamp
     t_sar2 = pair[1].timestamp
     
     # Rounding the SAR timestamps to align with the nearest whole hour of model timestamps
-    t_start = model_data_proces.round_start_time(t_sar1)
-    t_end = model_data_proces.round_end_time(t_sar2)
+    t_start = model_data_processing.round_start_time(t_sar1)
+    t_end = model_data_processing.round_end_time(t_sar2)
 
     print(f'SAR1 time is {t_sar1}, Model start time for the time period is {t_start}')
     print(f'SAR2 time is {t_sar2}, Model end time for the time period is {t_end}')
     
-    # 5.2. Set the time period for extracting hourly model data
+    # 6.2. Set the time period for extracting hourly model data
     time_period = pd.date_range(t_start, t_end, freq='H')
 
-    # 5.3. Calculate the difference between model start and end time and SAR1 and SAR2 timestamps
-    time_diff_start, time_diff_end, total_time_diff = model_data_proces.time_difference(t_sar1, t_sar2,  t_start, t_end)
+    # 6.3. Calculate the difference between model start and end time and SAR1 and SAR2 timestamps
+    time_diff_start, time_diff_end, total_time_diff = model_data_processing.time_difference(t_sar1, t_sar2,  t_start, t_end)
 
-    # 5.4. Calculate a hourly rolling average for 24 ensembles
-    avg_ice_u, avg_ice_v =  model_data_proces.rolling_avg_24_ensembles(jt, time_period, min_row, max_row, min_col, max_col)
+    # 6.4. Calculate a hourly rolling average for 24 ensembles
+    avg_ice_u, avg_ice_v =  model_data_processing.rolling_avg_24_ensembles(jt, time_period, min_row, max_row, min_col, max_col)
     
-    # 5.5. Calculating cummulative (integrated) drift for the subset extent
+    # 6.5. Calculating cummulative (integrated) drift for the subset extent
 
-    xx_b_subset, yy_b_subset, cum_dx_b_subset, cum_dy_b_subset = model_data_proces.cumulative_ice_displacement(X_subset, Y_subset, x, y, avg_ice_u, avg_ice_v, time_period, time_diff_start,time_diff_end)
+    xx_b_subset, yy_b_subset, cum_dx_b_subset, cum_dy_b_subset = model_data_processing.cumulative_ice_displacement(X_subset, Y_subset, x, y, avg_ice_u, avg_ice_v, time_period, time_diff_start,time_diff_end)
 
-    # 5.6. Get the final integrated displacement
+    # 6.6. Get the final integrated displacement
     model_u = np.reshape(cum_dx_b_subset[-1], x.shape)
     model_v = np.reshape(cum_dy_b_subset[-1], x.shape)
     x2 = np.reshape(xx_b_subset[-1], x.shape)
     y2 = np.reshape(yy_b_subset[-1], x.shape)
     
-    # 5.7. Save final drift, its parameters to npy files
+    # 6.7. Save final drift, its parameters to npy files
     save_name = 'mod_drift_output'
     mod_drift_output_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
                                                                              model_u=model_u, model_v=model_v,
                                                                          y2=y2, x2=x2)
-    # 5.8. Save the plot with model drift (using sar drift colourbar range)
-    model_data_process.plot_model_drift_results(sar_drift_output_path, x, y, model_u, model_v, sar_disp_min, sar_disp_max)
-
+    # 6.8. Save the plot with model drift (using sar drift colourbar range)
+    model_data_processing.plot_model_drift_results(sar_drift_output_path, x, y, model_u, model_v, sar_disp_min, sar_disp_max)
+    
+    print("5. Model data for retrieving drift fields prepared.")
     #======================================================================
-    # 6. Comparing sar and model drift data.
+    # 7. Comparing sar and model drift data.
     #----------------------------------------------------------------------
     
-    #6.1.  Replace inf with NaN before calculating the mean
+    # 7.1.  Replace inf with NaN before calculating the mean
     
     # Replace inf with nan in both arrays
     upm_no_inf[np.isinf(upm_no_inf)] = np.nan
@@ -382,11 +387,11 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     print(f"95th percentile disp: {percentile_95_model:.4f} km")
     
     
-    
+    print("6. Histograms of SAR and model drift created.")
     
     
     #======================================================================
-    # 7. Profiling
+    # 8. Profiling
     #----------------------------------------------------------------------
     end_time = time.time()
     print(f"Pair {index} processed in {end_time - start_time:.2f} seconds.")

@@ -137,8 +137,8 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     t_sar2 = pair[1].timestamp
 
     # Rounding the SAR timestamps to align with the nearest whole hour of model timestamps
-    t_start = model_data_proces.round_start_time(t_sar1)
-    t_end = model_data_proces.round_end_time(t_sar2)
+    t_start = model_data_processing.round_start_time(t_sar1)
+    t_end = model_data_processing.round_end_time(t_sar2)
 
     print(f'SAR1 time is {t_sar1}, Model start time for the time period is {t_start}')
     print(f'SAR2 time is {t_sar2}, Model end time for the time period is {t_end}')
@@ -148,15 +148,15 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     time_period = pd.date_range(t_start, t_end, freq='H')
 
     # 3.3. Calculate the difference between model start and end time and SAR1 and SAR2 timestamps
-    time_diff_start, time_diff_end, total_time_diff = model_data_proces.time_difference(t_sar1, t_sar2,  t_start, t_end)
+    time_diff_start, time_diff_end, total_time_diff = model_data_processing.time_difference(t_sar1, t_sar2,  t_start, t_end)
 
     # 3.4. Calculate a rolling average
 
-    avg_ice_u, avg_ice_v =  model_data_proces.rolling_avg_24_ensembles(jt, time_period, min_row, max_row, min_col, max_col)
+    avg_ice_u, avg_ice_v =  model_data_processing.rolling_avg_24_ensembles(jt, time_period, min_row, max_row, min_col, max_col)
     
     # 3.5. Calculating cummulative (integrated) drift for the subset extent
 
-    xx_b_subset, yy_b_subset, cum_dx_b_subset, cum_dy_b_subset = model_data_proces.cumulative_ice_displacement(X_subset, Y_subset, x, y, avg_ice_u, avg_ice_v, time_period, time_diff_start,time_diff_end)
+    xx_b_subset, yy_b_subset, cum_dx_b_subset, cum_dy_b_subset = model_data_processing.cumulative_ice_displacement(X_subset, Y_subset, x, y, avg_ice_u, avg_ice_v, time_period, time_diff_start,time_diff_end)
 
     # 3.6. Get the final integrated displacement
     model_u = np.reshape(cum_dx_b_subset[-1], x.shape)

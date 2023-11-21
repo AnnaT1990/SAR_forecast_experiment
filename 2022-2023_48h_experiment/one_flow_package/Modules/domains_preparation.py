@@ -136,7 +136,7 @@ def prepare_grid(n1, n2, srs, X, Y, lon, lat, buffer):
     lat_subset = lat[min_row:max_row+1, min_col:max_col+1]
 
 
-    return X_subset, Y_subset, lon_subset, lat_subset
+    return X_subset, Y_subset, lon_subset, lat_subset, min_row, max_row, min_col, max_col
 
 def plot_borders(mod_dom, n1, n2, output_dir_name):
     """
@@ -160,7 +160,7 @@ def plot_borders(mod_dom, n1, n2, output_dir_name):
     plt.legend()
 
     # Define save path
-    general_save_path = os.path.join(output_dir_name, "General_plots")
+    general_save_path = os.path.join(output_dir_name, "Drift_retrieval_plots")
     os.makedirs(general_save_path, exist_ok=True)
     save_path = os.path.join(general_save_path, "images_vs_domain_borders.png")
     # Save the figure
@@ -169,4 +169,4 @@ def plot_borders(mod_dom, n1, n2, output_dir_name):
     # Close the figure
     plt.close(fig)
 
-    return save_path
+    return general_save_path

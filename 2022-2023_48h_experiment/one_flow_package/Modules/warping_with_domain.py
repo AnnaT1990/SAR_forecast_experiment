@@ -100,7 +100,7 @@ def gamma_correction(image, gamma):
     """Apply gamma correction to an image."""
     return image ** (1.0 / gamma)
 
-
+#@profile
 def plot_sar_forecast_images(general_save_path, file_name, s1_dst_dom_hv, s2_dst_dom_hv, s1_dst_dom_S_hv, s1_dst_dom_hh, s2_dst_dom_hh, s1_dst_dom_S_hh, gamma_value=1.2):
     """
     Plot and save SAR forecast images.
@@ -157,4 +157,7 @@ def plot_sar_forecast_images(general_save_path, file_name, s1_dst_dom_hv, s2_dst
     # Save the figure
     save_path = os.path.join(general_save_path, f"{file_name}.png")
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
+    
+    del rgb_image1, rgb_image2, rgb_image3
+    gc.collect()
     plt.close(fig)

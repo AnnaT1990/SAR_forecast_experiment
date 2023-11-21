@@ -111,6 +111,7 @@ def run_feature_tracking(n1, n2, plots_dir):
 
 
 '''
+#@profile
 def run_pattern_matching(plots_dir, x, y, lon1pm, lat1pm, n1, c1, r1, n2, c2, r2, srs, **kwargs):
     
     upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm = pattern_matching(lon1pm, lat1pm, n1, c1, r1, n2, c2, r2,
@@ -152,6 +153,7 @@ def run_pattern_matching(plots_dir, x, y, lon1pm, lat1pm, n1, c1, r1, n2, c2, r2
     return upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm
 '''
 
+#@profile
 def run_pattern_matching(plots_dir, x, y, lon1pm, lat1pm, n1, c1, r1, n2, c2, r2, srs, **kwargs):
     # Assume pattern_matching is defined elsewhere and returns the necessary values
     upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm = pattern_matching(lon1pm, lat1pm, n1, c1, r1, n2, c2, r2,
@@ -190,6 +192,7 @@ def run_pattern_matching(plots_dir, x, y, lon1pm, lat1pm, n1, c1, r1, n2, c2, r2
         plt.xlim([x.min()-10000, x.max()-210000])
         plt.ylim([y.min()+110000, y.max()-160000])
         plt.tight_layout()
+        fig.set_facecolor('white')
         single_save_path = os.path.join(plots_dir, f"{titles[i+4].replace(' ', '_')}_plot.png")
         plt.savefig(single_save_path, dpi=300, bbox_inches='tight')
         plt.close()
@@ -256,7 +259,7 @@ def combine_hh_hv(output_dir_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh,
     fig.set_facecolor('white')
 
     # Define save path
-    general_save_path = os.path.join(output_dir_name, "General_plots")
+    general_save_path = os.path.join(output_dir_name, "Drift_retrieval_plots")
     os.makedirs(general_save_path, exist_ok=True)
     save_path = os.path.join(general_save_path, "hessian_HH_vs_HV_histogram.png")
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -363,51 +366,63 @@ def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessia
     u = upm/1000 
     v = vpm/1000 
     disp = np.sqrt((v**2+u**2))
-    
+
+    disp = np.where(np.isinf(disp), np.nan, disp)
+
+    # Find global min and max displacement for consistent color range in all plots
+    disp_min = np.nanmin(disp)
+    disp_max = np.nanmax(disp)
+
     plt.close('all')
     fig, axs = plt.subplots(1,3, figsize=(30,10)) 
-    
+
     gpi = (hpm>0)
 
     quiv_params = {
         'scale': 900,
         'cmap': 'jet',
         'width': 0.002,
-        'headwidth': 3
+        'headwidth': 3,
+        'clim': (disp_min, disp_max) 
+
     }
 
-    quiv1 = axs[0].quiver(x[gpi][::1], y[gpi][::1], u[gpi][::1], v[gpi][::1], disp[gpi][::1], **quiv_params)
-    quiv2 = axs[1].quiver(x[gpi1][::1], y[gpi1][::1], u[gpi1][::1], v[gpi1][::1], disp[gpi1][::1], **quiv_params)
-    quiv3 = axs[2].quiver(x[gpi2][::1], y[gpi2][::1], u[gpi2][::1], v[gpi2][::1], disp[gpi2][::1], **quiv_params)
+    # Create quiver plots   
+    quiv1 = axs[0].quiver(x[gpi][::1], y[gpi][::1], u[gpi][::1], v[gpi][::1], disp[gpi][::1],  **quiv_params)
+    quiv2 = axs[1].quiver(x[gpi1][::1], y[gpi1][::1], u[gpi1][::1], v[gpi1][::1], disp[gpi1][::1],  **quiv_params)
+    quiv3 = axs[2].quiver(x[gpi2][::1], y[gpi2][::1], u[gpi2][::1], v[gpi2][::1], disp[gpi2][::1],  **quiv_params)
 
+
+    # Colorbar with shared color scale
+    cbar = fig.colorbar(quiv1, ax=axs, orientation='vertical', shrink=0.9)
+    cbar.set_label('Displacement Magnitude [km]')
+
+    # Set the same x and y limits for all axes
+    for ax in axs:
+        ax.set_xlim([300000, 600000])
+        ax.set_ylim([150000, 600000])
 
     axs[0].set_title(f'Ice Drift Dispalcement before filtering [km]\n{np.sum(gpi.data)} values')
     axs[1].set_title(f'Ice Drift Displacement with hessian > {hessian} [km]\n{np.sum(gpi1.data)} values')
     axs[2].set_title(f'Ice Drift Displacement with hessian > {hessian} and neighbors > {neighbors} [km]\n{np.sum(gpi2.data)} values')
 
-    plt.colorbar(quiv1, ax=axs, orientation='vertical', shrink=0.9)
 
-    axs[0].set_xlim([300000, 600000])
-    axs[0].set_ylim([200000, 600000])
-    axs[1].set_xlim([300000, 600000])
-    axs[1].set_ylim([200000, 600000])
-    axs[2].set_xlim([300000, 600000])
-    axs[2].set_ylim([200000, 600000])
-    
     # Set background color to white
-    #ax.set_facecolor('white')
+    #ax.set_facecolor('white')plot_filter_results
     fig.set_facecolor('white')
+
+    plt.tight_layout
     
     plt.tight_layout
 
     # Save the figure without displaying it
-    general_save_path = os.path.join(output_dir_name, "General_plots")
-    os.makedirs(general_save_path, exist_ok=True)
-    save_path = os.path.join(general_save_path, f"Filtering_results_h{hessian}_n{neighbors}.png")
+    drift_save_path = os.path.join(output_dir_name, "Drift_retrieval_plots") 
+    os.makedirs(drift_save_path, exist_ok=True)
+    save_path = os.path.join(drift_save_path, f"Filtering_results_h{hessian}_n{neighbors}.png")
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
     
-    return general_save_path
+    return drift_save_path, disp_min, disp_max
 
 def save_sar_drift_results(output_dir_name, save_name, **kwargs):
     

@@ -30,13 +30,14 @@ path_to_HV_files = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_im
 
 # Directory containing the SAFE formatted Sentinel-1 images
 
-#safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe'
-safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe_test'
+safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe'
+#safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe_test'
 
-#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/batch_output'
-output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/test_batch_output'
+output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/batch_output'
+#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/test_batch_output'
 
 input_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/one_flow_input'
+
 # -----------------------------
 # Regular Expressions
 # -----------------------------
@@ -79,3 +80,13 @@ proj4 = str(data['proj4'])
 
 # Convert the proj4 string to a Nansat spatial reference object
 srs = NSR(proj4)
+
+# ----------------------------------------------------
+# Filtering parameters to get the best reference drift
+# ----------------------------------------------------
+
+# Hessian filter  for good pixel index (gpi1) based on hessian value
+hessian=8
+
+# Number of neighbors filter gpi2 combining hessian and neighbors with drift values count
+neighbors=2

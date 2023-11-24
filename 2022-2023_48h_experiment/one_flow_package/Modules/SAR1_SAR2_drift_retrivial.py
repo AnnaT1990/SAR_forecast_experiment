@@ -259,7 +259,7 @@ def combine_hh_hv(output_dir_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh,
     fig.set_facecolor('white')
 
     # Define save path
-    general_save_path = os.path.join(output_dir_name, "Drift_retrieval_plots")
+    general_save_path = os.path.join(output_dir_name, "drift_retrieval_plots")
     os.makedirs(general_save_path, exist_ok=True)
     save_path = os.path.join(general_save_path, "hessian_HH_vs_HV_histogram.png")
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -416,7 +416,7 @@ def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessia
     plt.tight_layout
 
     # Save the figure without displaying it
-    drift_save_path = os.path.join(output_dir_name, "Drift_retrieval_plots") 
+    drift_save_path = os.path.join(output_dir_name, "drift_retrieval_plots") 
     os.makedirs(drift_save_path, exist_ok=True)
     save_path = os.path.join(drift_save_path, f"Filtering_results_h{hessian}_n{neighbors}.png")
     fig.savefig(save_path, dpi=300, bbox_inches='tight')

@@ -142,7 +142,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     rows1, cols1 = mod_dom.shape()
     print("mod_dom corner coordinates:", mod_dom.transform_points([0,cols1-1,0,cols1-1], [0,0,rows1-1,rows1-1], dst_srs=srs))
     
-    print("1. Nansat objects created,  model and comparison domains defined.")
+    #print("1. Nansat objects created,  model and comparison domains defined.")
     #======================================================================
     # 3.   Retrieve SAR reference drift
     #----------------------------------------------------------------------
@@ -158,9 +158,9 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                lon1pm, lat1pm, n1_hv, c1_hv, r1_hv, n2_hv, c2_hv, r2_hv, srs, 
                                                                min_border=200,
                                                                max_border=200,
-                                                               #min_border=6, #test
-                                                               #max_border=6, #test
-                                                               #angles=[-6, -3, 0, 3, 6]) #test
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
                                                                angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
     # 3.2. Run feature tracking and pattern matching for HH
     
@@ -173,9 +173,9 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                lon1pm, lat1pm, n1_hh, c1_hh, r1_hh, n2_hh, c2_hh, r2_hh,srs, 
                                                                min_border=200,
                                                                max_border=200,
-                                                               #min_border=6, #test
-                                                               #max_border=6, #test
-                                                               #angles=[-6, -3, 0, 3, 6]) #test
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
                                                                angles=[-50, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 50 ])
     
     
@@ -206,7 +206,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                              hpm=hpm, ssim=ssim, lon2pm=lon2pm, 
                                                                              lat2pm=lat2pm, gpi1=gpi1, gpi2=gpi2)
     
-    print("2. SAR reference drift Retrieved")
+    #print("2. SAR reference drift Retrieved")
     #======================================================================
     # 4. Warp SAR1 image with the reference SAR drift and compare all SARs in the comparison domain
     #----------------------------------------------------------------------
@@ -228,7 +228,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
 
     # 4.2. Plot warping results
-    warping_plots_save_dir = os.path.join(output_dir_name, "Warping_plots")
+    warping_plots_save_dir = os.path.join(output_dir_name, "warping_plots")
     os.makedirs(warping_plots_save_dir, exist_ok=True)
     warping_with_domain.plot_sar_forecast_images(warping_plots_save_dir, 
                                                  "Forecast_with_sar_ref_drift", 
@@ -236,10 +236,10 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                  s1_dst_dom_hh, s2_dst_dom_hh, s1_dst_dom_S_hh,
                                                  gamma_value=1.2)
     
-    print("3. Warped SAR1 image with the reference SAR drift.")
+    #print("3. Warped SAR1 image with the reference SAR drift.")
         
     #======================================================================
-    # 5. Calculate quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted)
+    # 5. Calculate  sar warping quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted)
     #----------------------------------------------------------------------
     
     # 5.1. Make new nansat objects for comparison
@@ -247,25 +247,25 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     n_s2 = Nansat.from_domain(dst_dom, array = s2_dst_dom_hv)
     
     # 5.2. Create directory for saving plots 
-    distort_plots_dir = os.path.join(output_dir_name, f"SAR_distort_error_plots")
+    sar_distort_plots_dir = os.path.join(output_dir_name, f"sar_distort_error_plots")
     try:
-        os.makedirs(distort_plots_dir, exist_ok=True)
-        print(f"Successfully created {distort_plots_dir}")
+        os.makedirs(sar_distort_plots_dir, exist_ok=True)
+        print(f"Successfully created {sar_distort_plots_dir}")
     except Exception as e:
-        print(f"Failed to create {distort_plots_dir}. Error: {e}")
+        print(f"Failed to create {sar_distort_plots_dir}. Error: {e}")
         
     # 5.3. Calculate realibility indexes 
     # 5.3.1. Run feature tracking and plot results 
-    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, distort_plots_dir)
+    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, sar_distort_plots_dir)
     
     # 5.3.2. Run pattern matching and plot results
-    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(distort_plots_dir, x, y, 
+    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(sar_distort_plots_dir, x, y, 
                                                                lon1pm, lat1pm, n_s1_predict, c1_alg_hv, r1_alg_hv, n_s2, c2_alg_hv, r2_alg_hv, srs, 
                                                                min_border=200,
                                                                max_border=200,
-                                                               #min_border=6, #test
-                                                               #max_border=6, #test
-                                                               #angles=[-6, -3, 0, 3, 6]) #test
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
                                                                #angles=[-15,-12,-9,-6, -3, 0, 3, 6, 9, 12, 15]) #light
                                                                angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
     
@@ -277,7 +277,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                              lat2pm=lat2pm_alg_hv, gpi1=gpi1, gpi2=gpi2)
 
 
-    print("4. Calculated quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted.")
+    #print("4. Calculated quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted.")
     #======================================================================
     # 6. Prepare model data for retrieving drift fields.
     #----------------------------------------------------------------------
@@ -320,18 +320,87 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                              model_u=model_u, model_v=model_v,
                                                                          y2=y2, x2=x2)
     # 6.8. Save the plot with model drift (using sar drift colourbar range)
-    model_data_processing.plot_model_drift_results(sar_drift_output_path, x, y, model_u, model_v, sar_disp_min, sar_disp_max)
+    model_data_processing.plot_model_drift_results(drift_plot_save_path, x, y, model_u, model_v, sar_disp_min, sar_disp_max)
+    model_data_processing.plot_model_drift_gpi_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi2, model_u, model_v, sar_disp_min, sar_disp_max)
     
-    print("5. Model data for retrieving drift fields prepared.")
+    #print("5. Model data for retrieving drift fields prepared.")
+    
     #======================================================================
-    # 7. Comparing sar and model drift data.
+    # 7. Warp SAR1 image with the model SAR drift and compare all SARs in the comparison domain
+    #----------------------------------------------------------------------
+
+    # 7.1. Warp
+    # Warp SAR1 with model drift compenstaion/displacement
+    # Create individual masks for non-NaN values in each array
+    mask_u = np.isnan(model_u)
+    mask_v = np.isnan(model_v)
+    mask = mask_u & mask_v # mask out low quality or NaN
+    s1_dst_dom_S_hv = warping_with_domain.warp_with_uv(n1_hv, n1_hv[1], mod_dom, model_u, model_v, mask, dst_dom)
+    s1_dst_dom_S_hh = warping_with_domain.warp_with_uv(n1_hh, n1_hh[1], mod_dom, model_u, model_v, mask, dst_dom)
+
+    # Warp SAR2 to the comparison domain
+    s2_dst_dom_hv = warping_with_domain.warp(n2_hv, n2_hv[1], dst_dom)
+    s2_dst_dom_hh = warping_with_domain.warp(n2_hh, n2_hh[1], dst_dom)
+
+    # Warp SAR1 to the comparison domain for visualisation
+    s1_dst_dom_hv = warping_with_domain.warp(n1_hv, n1_hv[1], dst_dom)
+    s1_dst_dom_hh = warping_with_domain.warp(n1_hh, n1_hh[1], dst_dom)
+    
+    # 7.2. Plot warping results
+
+
+    warping_with_domain.plot_sar_forecast_images(warping_plots_save_dir, 
+                                                 "Forecast_with_mod_ref_drift", 
+                                             s1_dst_dom_hv, s2_dst_dom_hv, s1_dst_dom_S_hv,
+                                             s1_dst_dom_hh, s2_dst_dom_hh, s1_dst_dom_S_hh,
+                                             gamma_value=1.2)
+    #======================================================================
+    # 8. Calculate model warping quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted)
     #----------------------------------------------------------------------
     
-    # 7.1.  Replace inf with NaN before calculating the mean
+    # 8.1. Make new nansat objects for comparison
+    n_s1_predict = Nansat.from_domain(dst_dom, array = s1_dst_dom_S_hv)
+    n_s2 = Nansat.from_domain(dst_dom, array = s2_dst_dom_hv)
+
+    # 8.2. Create directory for saving plots 
+    mod_distort_plots_dir = os.path.join(output_dir_name, f"model_distortion_error_plots")
+    try:
+        os.makedirs(mod_distort_plots_dir, exist_ok=True)
+        print(f"Successfully created {mod_distort_plots_dir}")
+    except Exception as e:
+        print(f"Failed to create {mod_distort_plots_dir}. Error: {e}")
+
+    # Calculate realibility indexes 
+    # 8.4. Run feature tracking and plot results 
+    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, mod_distort_plots_dir)
+
+    # 8.5. Run pattern matching and plot results
+    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(mod_distort_plots_dir, x, y, 
+                                                               lon1pm, lat1pm, n_s1_predict, c1_alg_hv, r1_alg_hv, n_s2, c2_alg_hv, r2_alg_hv, srs, 
+                                                               min_border=200,
+                                                               max_border=200,
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
+                                                               angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+    
+    # 8.6. Save comparison results, its parameters and filtering arrays to npy files
+    save_name = 'model_distort_error_data'
+    mod_distort_data_error_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
+                                                                             upm=upm_alg_hv, vpm=vpm_alg_hv, apm=apm_alg_hv, rpm=rpm_alg_hv, 
+                                                                             hpm=hpm_alg_hv, ssim=ssim_alg_hv, lon2pm=lon2pm_alg_hv, 
+                                                                             lat2pm=lat2pm_alg_hv, gpi1=gpi1, gpi2=gpi2)
+    
+    #======================================================================
+    # 9. Comparing sar and model drift data.
+    #----------------------------------------------------------------------
+    
+    # 9.1.  Replace inf with NaN before calculating the mean
     
     # Replace inf with nan in both arrays
-    upm_no_inf[np.isinf(upm_no_inf)] = np.nan
-    vpm_no_inf[np.isinf(vpm_no_inf)] = np.nan
+    upm_no_inf = np.where(np.isinf(upm), np.nan, upm)
+    vpm_no_inf = np.where(np.isinf(vpm), np.nan, vpm)
+    
     
     # Plot histograms
     
@@ -341,7 +410,8 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     disp_model_b = disp_model_b[gpi2].flatten()
     disp_alg = disp_alg[gpi2].flatten()
 
-    plt.figure(figsize=(8,6))
+    plt.close('all')
+    fig = plt.figure(figsize=(8,6))
 
     # Plotting Model displacements
     plt.hist(disp_model_b, bins=50, color='red', alpha=0.5, label= 'Barents Model Displacements')
@@ -353,13 +423,15 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     plt.ylabel('Frequency')
     plt.title('Distribution of Ice Drift Displacements (filtered)')
     plt.legend()
-
-    # Save plot
     
+    fig.set_facecolor('white')
+    
+    # Save plot
     hist_save_path =  os.path.join(drift_plot_save_path, "drift_comparison_hist.png")
     
     fig.savefig(hist_save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
+    
 
 
     # Print statistics for reference displacements
@@ -387,11 +459,11 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     print(f"95th percentile disp: {percentile_95_model:.4f} km")
     
     
-    print("6. Histograms of SAR and model drift created.")
+    #print("6. Histograms of SAR and model drift created.")
     
     
     #======================================================================
-    # 8. Profiling
+    # 10. Profiling
     #----------------------------------------------------------------------
     end_time = time.time()
     print(f"Pair {index} processed in {end_time - start_time:.2f} seconds.")

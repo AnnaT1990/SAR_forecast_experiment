@@ -325,10 +325,11 @@ def cumulative_ice_displacement(X, Y, x, y, ice_u, ice_v, time_period, time_diff
     return xx, yy, int_dx, int_dy
 
 
-def plot_model_drift_results(sar_drift_output_path, x, y, upm, vpm, sar_disp_min, sar_disp_max):
+def plot_model_drift_results(drift_plot_save_path, x, y, model_u, model_v, sar_disp_min, sar_disp_max):
     u = model_u / 1000  # convert to kilometers
     v = model_v / 1000  # convert to kilometers
     disp = np.sqrt((v**2 + u**2))  # calculate displacement magnitude
+    disp = np.where(np.isinf(disp), np.nan, disp)
 
     # Close any existing figures
     plt.close('all')
@@ -369,6 +370,63 @@ def plot_model_drift_results(sar_drift_output_path, x, y, upm, vpm, sar_disp_min
     plt.show()
     
     # Save the figure without displaying it
-    save_path = os.path.join(sar_drift_output_path, f"Model_drift_field.png")
+    save_path = os.path.join(drift_plot_save_path, f"Model_drift_field.png")
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
+    
+def plot_model_drift_gpi_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi2, model_u, model_v, sar_disp_min, sar_disp_max):
+    
+    u = upm/1000 
+    v = vpm/1000 
+    disp = np.sqrt((v**2+u**2))
+    disp = np.where(np.isinf(disp), np.nan, disp)
+
+    u_model = model_u / 1000  # convert to kilometers
+    v_model = model_v / 1000  # convert to kilometers
+    disp_model = np.sqrt((u_model**2 + v_model**2))  # calculate displacement magnitude
+    disp_model = np.where(np.isinf(disp_model), np.nan, disp_model)
+    
+    plt.close('all')
+    fig, axs = plt.subplots(1,2, figsize=(20,10)) 
+
+    quiv_params = {
+        'scale': 900,
+        'cmap': 'jet',
+        'width': 0.002,
+        'headwidth': 3,
+        'clim': (sar_disp_min, sar_disp_max)
+
+    }
+
+    # Create quiver plots   
+    quiv1 = axs[0].quiver(x[gpi2][::1], y[gpi2][::1], u[gpi2][::1], v[gpi2][::1], disp[gpi2][::1],  **quiv_params)
+    quiv2 = axs[1].quiver(x[gpi2][::1], y[gpi2][::1], u_model[gpi2][::1], v_model[gpi2][::1], disp_model[gpi2][::1],  **quiv_params)
+
+
+    # Colorbar with shared color scale
+    cbar = fig.colorbar(quiv1, ax=axs, orientation='vertical', shrink=0.9)
+    cbar.set_label('Displacement Magnitude [km]')
+
+    # Set the same x and y limits for all axes
+    for ax in axs:
+        ax.set_xlim([300000, 600000])
+        ax.set_ylim([150000, 600000])
+
+    axs[0].set_title(f'SAR reference drift data')
+    axs[1].set_title(f'Barents2.5 model drift data')
+
+
+    # Set background color to white
+    #ax.set_facecolor('white')plot_filter_results
+    fig.set_facecolor('white')
+
+    plt.tight_layout
+    
+    plt.tight_layout
+
+    # Save the figure without displaying it
+    save_path = os.path.join(drift_plot_save_path, f"Model_vs_SAR_drift.png")
+    fig.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+    
+    

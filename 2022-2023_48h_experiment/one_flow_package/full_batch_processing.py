@@ -35,6 +35,8 @@ from config import output_folder, input_folder
 from config import S1_prod_regex, S1_safe_regex
 from config import lon, lat, X, Y, proj4, srs
 from config import hessian, neighbors
+from config import disp_legend_min
+from config import disp_legend_max
 
 # For cleaning up memory
 import gc
@@ -150,8 +152,14 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     # 3.1. Run feature tracking and pattern matching for HV
     
    
-    # Run feature tracking and plot results 
-    c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv)
+    # Run feature tracking and plot results  
+    c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv, FT=True)
+    # Check the number of keypoints
+    if len(c1_hv) >= 4:
+        print(f"Enough keypoints for PM -  {len(c1_hv)} > 4")
+    else:
+        print(f"Not enough key points for PM - {len(c1_hv)} < 4, skipping FT")
+        c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv, FT= False)
     
     #Run pattern matching and plot results
     upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(plots_dir_hv, x, y, 
@@ -162,11 +170,18 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                #max_border=10, #test
                                                                #angles=[0]) #test
                                                                angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+    
     # 3.2. Run feature tracking and pattern matching for HH
     
     # HH Processing
     # Run feature tracking and plot results 
-    c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrivial.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh)
+    c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrivial.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh, FT=True)
+    # Check the number of keypoints
+    if len(c1_hh) >= 4:
+        print(f"Enough keypoints for PM -  {len(c1_hh)} > 4")
+    else:
+        print(f"Not enough key points for PM - {len(c1_hh)} < 4, skipping FT")
+        c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrivial.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh, FT= False)
     
     #Run pattern matching and plot results
     upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh = SAR1_SAR2_drift_retrivial.run_pattern_matching(plots_dir_hh, x, y, 
@@ -191,12 +206,12 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     #    - gpi1: Good pixel index based on hessian value
     #    - gpi2: Good pixel index combining hessian and neighbors count 
 
-    
+    # Calculate gpi mask
     gpi1, gpi2 = SAR1_SAR2_drift_retrivial.get_good_pixel_indices(hpm, h_threshold=hessian, neighbors_threshold=neighbors)
     
         
     # Plot the filtering results
-    drift_plot_save_path, sar_disp_min, sar_disp_max = SAR1_SAR2_drift_retrivial.plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessian, neighbors)
+    drift_plot_save_path, sar_disp_min, sar_disp_max = SAR1_SAR2_drift_retrivial.plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, disp_legend_min, disp_legend_max, hessian, neighbors)
     
     
     #  Save final reference drift, its parameters and filtering arrays to npy files
@@ -256,7 +271,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
         
     # 5.3. Calculate realibility indexes 
     # 5.3.1. Run feature tracking and plot results 
-    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, sar_distort_plots_dir)
+    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, sar_distort_plots_dir, FT=False)
     
     # 5.3.2. Run pattern matching and plot results
     upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(sar_distort_plots_dir, x, y, 
@@ -268,13 +283,15 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                #angles=[0]) #test
                                                                #angles=[-15,-12,-9,-6, -3, 0, 3, 6, 9, 12, 15]) #light
                                                                angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+    # Calculate gpi mask
+    gpi1_alg_hv, gpi2_alg_hv = SAR1_SAR2_drift_retrivial.get_good_pixel_indices(hpm_alg_hv, h_threshold=hessian, neighbors_threshold=neighbors)
     
     # 5.4. Save comparison results, its parameters and filtering arrays to npy files
     save_name = 'sar_distort_error_data'
     sar_distort_data_error_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
                                                                              upm=upm_alg_hv, vpm=vpm_alg_hv, apm=apm_alg_hv, rpm=rpm_alg_hv, 
                                                                              hpm=hpm_alg_hv, ssim=ssim_alg_hv, lon2pm=lon2pm_alg_hv, 
-                                                                             lat2pm=lat2pm_alg_hv, gpi1=gpi1, gpi2=gpi2)
+                                                                             lat2pm=lat2pm_alg_hv, gpi1=gpi1_alg_hv, gpi2=gpi2_alg_hv)
 
 
     #print("4. Calculated quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted.")
@@ -320,8 +337,8 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                              model_u=model_u, model_v=model_v,
                                                                          y2=y2, x2=x2)
     # 6.8. Save the plot with model drift (using sar drift colourbar range)
-    model_data_processing.plot_model_drift_results(drift_plot_save_path, x, y, model_u, model_v, sar_disp_min, sar_disp_max)
-    model_data_processing.plot_model_drift_gpi_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi2, model_u, model_v, sar_disp_min, sar_disp_max)
+    model_data_processing.plot_model_drift_results(drift_plot_save_path, x, y, model_u, model_v, disp_legend_min, disp_legend_max)
+    model_data_processing.plot_model_drift_gpi_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi2, model_u, model_v, disp_legend_min, disp_legend_max)
     
     #print("5. Model data for retrieving drift fields prepared.")
     
@@ -371,12 +388,12 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
         print(f"Failed to create {mod_distort_plots_dir}. Error: {e}")
 
     # Calculate realibility indexes 
-    # 8.4. Run feature tracking and plot results 
-    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, mod_distort_plots_dir)
+    # 8.4. Run feature tracking on a regular grid for ares where drift errors wasn't strong but FT struggles
+    c1_mod_hv, r1_mod_hv, c2_mod_hv, r2_mod_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, mod_distort_plots_dir, FT=False)
 
     # 8.5. Run pattern matching and plot results
-    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(mod_distort_plots_dir, x, y, 
-                                                               lon1pm, lat1pm, n_s1_predict, c1_alg_hv, r1_alg_hv, n_s2, c2_alg_hv, r2_alg_hv, srs, 
+    upm_mod_hv, vpm_mod_hv, apm_mod_hv, rpm_mod_hv, hpm_mod_hv, ssim_mod_hv, lon2pm_mod_hv, lat2pm_mod_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(mod_distort_plots_dir, x, y, 
+                                                               lon1pm, lat1pm, n_s1_predict, c1_mod_hv, r1_mod_hv, n_s2, c2_mod_hv, r2_mod_hv, srs, 
                                                                min_border=200,
                                                                max_border=200,
                                                                #min_border=10, #test
@@ -384,12 +401,56 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                                                #angles=[0]) #test
                                                                angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
     
+    # Calculate gpi mask
+    gpi1_mod_hv, gpi2_mod_hv = SAR1_SAR2_drift_retrivial.get_good_pixel_indices(hpm_mod_hv, h_threshold=hessian, neighbors_threshold=neighbors)
+        
+    
     # 8.6. Save comparison results, its parameters and filtering arrays to npy files
     save_name = 'model_distort_error_data'
     mod_distort_data_error_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
-                                                                             upm=upm_alg_hv, vpm=vpm_alg_hv, apm=apm_alg_hv, rpm=rpm_alg_hv, 
-                                                                             hpm=hpm_alg_hv, ssim=ssim_alg_hv, lon2pm=lon2pm_alg_hv, 
-                                                                             lat2pm=lat2pm_alg_hv, gpi1=gpi1, gpi2=gpi2)
+                                                                             upm=upm_mod_hv, vpm=vpm_mod_hv, apm=apm_mod_hv, rpm=rpm_mod_hv, 
+                                                                             hpm=hpm_mod_hv, ssim=ssim_mod_hv, lon2pm=lon2pm_mod_hv, 
+                                                                             lat2pm=lat2pm_mod_hv, gpi1=gpi1_mod_hv, gpi2=gpi2_mod_hv)
+    
+    # 8.7. Run feature tracking with FT on for areas where patterns are good but ice drifted too far beyond search window border
+    c1_mod_ft_hv, r1_mod_ft_hv, c2_mod_ft_hv, r2_mod_ft_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, mod_distort_plots_dir, FT=True)
+
+    # 8.8. Run pattern matching and plot results
+    upm_mod_ft_hv, vpm_mod_ft_hv, apm_mod_ft_hv, rpm_mod_ft_hv, hpm_mod_ft_hv, ssim_mod_ft_hv, lon2pm_mod_ft_hv, lat2pm_mod_ft_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(mod_distort_plots_dir, x, y, 
+                                                               lon1pm, lat1pm, n_s1_predict,  c1_mod_ft_hv, r1_mod_ft_hv, n_s2, c2_mod_ft_hv, r2_mod_ft_hv, srs, 
+                                                               min_border=200,
+                                                               max_border=200,
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
+                                                               angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+    # Calculate gpi mask
+    gpi1_mod_ft_hv, gpi2_mod_ft_hv = SAR1_SAR2_drift_retrivial.get_good_pixel_indices(hpm_mod_ft_hv, h_threshold=hessian, neighbors_threshold=neighbors)
+    
+    
+    # 8.9. Save comparison results, its parameters and filtering arrays to npy files
+    save_name = 'model_distort_error_data_ft'
+    mod_distort_data_error_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
+                                                                             upm=upm_mod_ft_hv, vpm=vpm_mod_ft_hv, apm=apm_mod_ft_hv, rpm=rpm_mod_ft_hv, 
+                                                                             hpm=hpm_mod_ft_hv, ssim=ssim_mod_ft_hv, lon2pm=lon2pm_mod_ft_hv, 
+                                                                             lat2pm=lat2pm_mod_ft_hv, gpi1=gpi1_mod_ft_hv, gpi2=gpi2_mod_ft_hv)
+    
+    
+    # 8.10. Combining results for FT off anf on based on hessian threshold
+    upm_mod_comb, vpm_mod_comb, apm_mod_comb, rpm_mod_comb, hpm_mod_comb, ssim_mod_comb, lon2pm_mod_comb, lat2pm_mod_comb = SAR1_SAR2_drift_retrivial.combine_hh_hv(output_dir_name, x, y, upm_mod_hv, vpm_mod_hv, apm_mod_hv, rpm_mod_hv, hpm_mod_hv, ssim_mod_hv, lon2pm_mod_hv, lat2pm_mod_hv
+                                   upm_mod_ft_hv, vpm_mod_ft_hv, apm_mod_ft_hv, rpm_mod_ft_hv, hpm_mod_ft_hv, ssim_mod_ft_hv, lon2pm_mod_ft_hv, lat2pm_mod_ft_hv)
+   
+    # Calculate gpi mask
+    gpi1_mod_comb, gpi2_mod_comb = SAR1_SAR2_drift_retrivial.get_good_pixel_indices(hpm_mod_comb, h_threshold=hessian, neighbors_threshold=neighbors)
+    
+    # 8.11. Save comparison results, its parameters and filtering arrays to npy files
+    save_name = 'model_distort_error_data_combined'
+    mod_distort_data_error_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
+                                                                             upm=upm_mod_comb, vpm=vpm_mod_comb, apm=apm_mod_comb, rpm=rpm_mod_comb, 
+                                                                             hpm=hpm_mod_comb, ssim=ssim_mod_comb, lon2pm=lon2pm_mod_comb, 
+                                                                             lat2pm=lat2pm_mod_comb, gpi1=gpi1_mod_comb, gpi2=gpi2_mod_comb)    
+    
+    
     
     #======================================================================
     # 9. Comparing sar and model drift data.

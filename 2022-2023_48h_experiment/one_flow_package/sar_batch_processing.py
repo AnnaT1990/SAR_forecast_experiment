@@ -27,6 +27,8 @@ from config import output_folder, input_folder
 from config import S1_prod_regex, S1_safe_regex
 from config import lon, lat, X, Y, proj4, srs
 from config import hessian, neighbors
+from config import disp_legend_min
+from config import disp_legend_max
 
 # For cleaning up memory
 import gc
@@ -181,7 +183,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
         
     # Plot the filtering results
-    drift_save_path, sar_disp_min, sar_disp_max = SAR1_SAR2_drift_retrivial.plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessian, neighbors)
+    drift_save_path, sar_disp_min, sar_disp_max = SAR1_SAR2_drift_retrivial.plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2,disp_legend_min, disp_legend_max, hessian, neighbors)
     
     
     #  Save final reference drift, its parameters and filtering arrays to npy files

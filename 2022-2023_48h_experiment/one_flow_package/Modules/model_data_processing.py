@@ -342,7 +342,7 @@ def plot_model_drift_results(drift_plot_save_path, x, y, model_u, model_v, sar_d
         'cmap': 'jet',
         'width': 0.002,
         'headwidth': 3,
-        'clim': (sar_disp_min, sar_disp_max)
+        'clim': (sar_disp_min, sar_disp_max) 
     }
 
     step = 1

@@ -27,30 +27,45 @@ import sys
 sys.path.append(r'./modules/sea_ice_drift')
 from pmlib_with_ssim import pattern_matching
 
-def run_feature_tracking(n1, n2, plots_dir):  
+from scipy.ndimage import convolve
+
+
+def run_feature_tracking(n1, n2, plots_dir, FT=True):  
     
     """
     Execute feature tracking between two SAR images and visualize the results.
-
-    This function performs feature tracking between two Nansat objects representing SAR images. 
-    It identifies and matches keypoints (features) between the images, then visualizes:
-    1. The matched keypoints in geographic coordinates.
-    2. The ice drift vectors superimposed on the first SAR image.
 
     Parameters:
     - n1: The first Nansat object representing a SAR image 1.
     - n2: The second Nansat object representing a SAR image 2.
     - plots_dir: Directory path where the visualizations will be saved.
+    - FT: Boolean, if True use feature tracking, otherwise use meshgrid approach.
 
     Returns:
     - c1, r1: Column and row coordinates of matched keypoints in the first image.
     - c2, r2: Column and row coordinates of matched keypoints in the second image.
     - lon1b, lat1b: Longitude and latitude coordinates of the border of the first image.
-
     """
+
+    if FT:
+        # Feature Tracking Approach
+        c1, r1, c2, r2 = feature_tracking(n1, n2, nFeatures=50000, ratio_test=0.6, max_drift=100000, verbose=True)
+    else:
+        # Meshgrid Approach
+        c1, r1 = np.meshgrid(
+            np.arange(1, n1.shape()[1], 250),
+            np.arange(1, n1.shape()[0], 250))
+        c1, r1 = c1.flatten(), r1.flatten()
+        lon1ft, lat1ft = n1.transform_points(c1, r1)
+        c2, r2 = n2.transform_points(lon1ft, lat1ft, DstToSrc=True)
+
+        margin = 200
+        gpi = ((c1 > margin) * (r1 > margin) * (c1 < (n1.shape()[1]-margin)) * (r1 < (n1.shape()[0]-margin)) *
+               (c2 > margin) * (r2 > margin) * (c2 < (n2.shape()[1]-margin)) * (r2 < (n2.shape()[0]-margin)))
+
+        c1, r1, c2, r2 = c1[gpi], r1[gpi], c2[gpi], r2[gpi]
         
-    # get start/end coordinates in the image coordinate system (colums/rows)  
-    c1, r1, c2, r2 = feature_tracking(n1, n2, nFeatures=50000, ratio_test=0.6, max_drift=100000, verbose=True)
+    
 
     # Plot identified and matched keypoints in geographic coordinates
 
@@ -107,6 +122,7 @@ def run_feature_tracking(n1, n2, plots_dir):
     save_path = os.path.join(plots_dir, f"ft_drift_vectors.png")
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
+    
     return c1, r1, c2, r2
 
 
@@ -319,7 +335,7 @@ def combine_hh_hv(output_dir_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh,
     
     return upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm
 
-from scipy.ndimage import convolve
+
 
 def get_good_pixel_indices(hpm, h_threshold, neighbors_threshold):
     """
@@ -361,7 +377,7 @@ def get_good_pixel_indices(hpm, h_threshold, neighbors_threshold):
     
     return gpi1, gpi2
 
-def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessian, neighbors):
+def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, disp_legend_min, disp_legend_max, hessian, neighbors):
     
     u = upm/1000 
     v = vpm/1000 
@@ -372,6 +388,7 @@ def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessia
     # Find global min and max displacement for consistent color range in all plots
     disp_min = np.nanmin(disp)
     disp_max = np.nanmax(disp)
+    
 
     plt.close('all')
     fig, axs = plt.subplots(1,3, figsize=(30,10)) 
@@ -383,8 +400,7 @@ def plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2, hessia
         'cmap': 'jet',
         'width': 0.002,
         'headwidth': 3,
-        'clim': (disp_min, disp_max) 
-
+        'clim': (disp_legend_min, disp_legend_max) 
     }
 
     # Create quiver plots   

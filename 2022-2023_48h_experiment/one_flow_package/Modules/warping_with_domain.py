@@ -61,10 +61,12 @@ def warp(src_dom, src_img, dst_dom, step=None):
 def warp_and_mask_with_lonlat(src_dom, src_img, lon1, lat1, lon2, lat2, mask, dst_dom, max_dist=2, fill_value=0):
     """ Warp input image on destination domain with drift compensation and masking if lon,lat,mask matrices are given """
     lon1v, lat1v, lon2v, lat2v = [i[~mask] for i in [lon1, lat1, lon2, lat2]]
+    src_img = src_img.astype(float)
     dst_img = warp_with_lonlat(src_dom, src_img, lon1v, lat1v, lon2v, lat2v, dst_dom)
     dst_dist = warp_distance(dst_dom, lon1, lat1, mask)
     dst_img[(dst_dist > max_dist) + np.isnan(dst_dist)] = fill_value
     return dst_img
+
 
 def warp_with_uv(src_dom, src_img, uv_dom, u, v, mask, dst_dom):
     """ Warp input image on destination domain with drift compensation and masking if U,V,mask matrices are given """
@@ -82,6 +84,21 @@ def warp_with_uv(src_dom, src_img, uv_dom, u, v, mask, dst_dom):
     dst_img = warp_with_lonlat(src_dom, inp_img, lon1uv[~mask], lat1uv[~mask], lon2uv, lat2uv, dst_dom)
     return dst_img
 
+def warp_and_mask_with_uv(src_dom, src_img, uv_dom, u, v, mask, dst_dom, max_dist=2, fill_value=0):
+    """ Warp input image on destination domain with drift compensation and masking if U,V,mask matrices are given """
+    uv_srs = NSR(uv_dom.vrt.get_projection()[0])
+    lon1uv, lat1uv = uv_dom.get_geolocation_grids()
+    x1, y1, _ = uv_dom.vrt.transform_coordinates(NSR(), (lon1uv, lat1uv), uv_srs)
+    x2 = x1 + u
+    y2 = y1 + v
+    lon2uv, lat2uv, _ = uv_dom.vrt.transform_coordinates(uv_srs, (x2, y2), NSR())
+    inp_img = np.array(src_img)
+    inp_img[0] = 0
+    inp_img[-1] = 0
+    inp_img[:, 0] = 0
+    inp_img[:, -1] = 0
+    dst_img = warp_and_mask_with_lonlat(src_dom, inp_img, lon1uv, lat1uv, lon2uv, lat2uv, mask, dst_dom, max_dist=max_dist, fill_value=fill_value) #np.nan if want Nan
+    return dst_img
 
 # Functions for plotting warping results
 import os
@@ -101,7 +118,7 @@ def gamma_correction(image, gamma):
     return image ** (1.0 / gamma)
 
 #@profile
-def plot_sar_forecast_images(general_save_path, file_name, s1_dst_dom_hv, s2_dst_dom_hv, s1_dst_dom_S_hv, s1_dst_dom_hh, s2_dst_dom_hh, s1_dst_dom_S_hh, gamma_value=1.2):
+def plot_sar_forecast_images(general_save_path, file_name, s1_dst_dom_hv, s1_dst_dom_hh, s2_dst_dom_hv, s2_dst_dom_hh, s1_dst_dom_S_hv, s1_dst_dom_S_hh, gamma_value=1.2):
     """
     Plot and save SAR forecast images.
 
@@ -138,11 +155,11 @@ def plot_sar_forecast_images(general_save_path, file_name, s1_dst_dom_hv, s2_dst
     # Display the composite images
     fig, axs = plt.subplots(1, 3, figsize=(20, 8))
     axs[0].imshow(rgb_image1)
-    axs[1].imshow(rgb_image3)
-    axs[2].imshow(rgb_image2)
+    axs[1].imshow(rgb_image2)
+    axs[2].imshow(rgb_image3)
     axs[0].set_title('SAR1')
-    axs[1].set_title('SAR2 Predicted')
-    axs[2].set_title('SAR2')
+    axs[1].set_title('SAR2')
+    axs[2].set_title('SAR2 Predicted')
 
     # Set common limits for all subplots and background color to white
     for ax in axs:

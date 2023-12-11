@@ -19,7 +19,7 @@ from nansat import Nansat, Domain, NSR
 from sea_ice_drift import get_n
 from sea_ice_drift.lib import get_spatial_mean, get_uint8_image
 
-def prepare_nansat_objects(sar1, sar2, output_folder, polarisation):
+def prepare_nansat_objects(sar1, sar2, hh_hv_pm_plots_dir, polarisation):
     
     """
     Prepare and plot Nansat objects from given SAR images.
@@ -47,16 +47,8 @@ def prepare_nansat_objects(sar1, sar2, output_folder, polarisation):
     n2 = get_n(f2, bandName= f'sigma0_{polarisation}', remove_spatial_mean=True)
     
     
-    # Create directory for saving outputs for each pair of images
-    output_dir_name = os.path.join(output_folder, f"{sar1.timestamp.strftime('%Y%m%dT%H%M%S')}_{sar2.timestamp.strftime('%Y%m%dT%H%M%S')}")
-    try:
-        os.makedirs(output_dir_name, exist_ok=True)
-        print(f"Successfully created {output_dir_name}")
-    except Exception as e:
-        print(f"Failed to create {output_dir_name}. Error: {e}")
-    
     # Create directory for saving plots
-    plots_dir = os.path.join(output_dir_name, f"{polarisation}_plots")
+    plots_dir = os.path.join(hh_hv_pm_plots_dir, f"{polarisation}_plots")
     try:
         os.makedirs(plots_dir, exist_ok=True)
         print(f"Successfully created {plots_dir}")
@@ -93,11 +85,11 @@ def prepare_nansat_objects(sar1, sar2, output_folder, polarisation):
     # Close it after saving
     plt.close(fig)
   
-    return n1, n2, output_dir_name, plots_dir
+    return n1, n2, plots_dir
 
 def prepare_grid(n1, n2, srs, X, Y, lon, lat, buffer):
     """
-    Prepare a subset grid based on teh model grid and based on the bounds of the SAR image, expanded by a buffer.
+    Prepare a subset grid based on the model grid and based on the bounds of the SAR image, expanded by a buffer.
     
     The function extracts a subset of the grid from the model based on the bounds 
     of the SAR image and adds a buffer to the subset. This buffered subset grid 
@@ -138,7 +130,7 @@ def prepare_grid(n1, n2, srs, X, Y, lon, lat, buffer):
 
     return X_subset, Y_subset, lon_subset, lat_subset, min_row, max_row, min_col, max_col
 
-def plot_borders(mod_dom, n1, n2, output_dir_name):
+def plot_borders(mod_dom, n1, n2, output_dir_path):
     """
     Plot borders of model subset domain and two Sentinel images.
 
@@ -146,7 +138,7 @@ def plot_borders(mod_dom, n1, n2, output_dir_name):
     - mod_dom: Model subset domain object with a get_border() method
     - n1: First Sentinel image object with a get_border() method
     - n2: Second Sentinel image object with a get_border() method
-    - output_dir_name: Directory path for saving the plotted figure
+    - output_dir_path: Directory path for saving the plotted figure
 
     Returns:
     - save_path: Full path to the saved figure
@@ -160,13 +152,12 @@ def plot_borders(mod_dom, n1, n2, output_dir_name):
     plt.legend()
 
     # Define save path
-    general_save_path = os.path.join(output_dir_name, "Drift_retrieval_plots")
-    os.makedirs(general_save_path, exist_ok=True)
-    save_path = os.path.join(general_save_path, "images_vs_domain_borders.png")
+
+    save_path = os.path.join(output_dir_path, "images_vs_domain_borders.png")
     # Save the figure
     fig.savefig(save_path, dpi=300, bbox_inches='tight')
     
     # Close the figure
     plt.close(fig)
 
-    return general_save_path
+    return 

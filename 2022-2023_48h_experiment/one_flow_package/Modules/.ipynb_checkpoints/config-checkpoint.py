@@ -1,6 +1,3 @@
-import os
-import numpy as np
-
 # Module
 
 # ---------------------------------------------------------------------- #
@@ -13,6 +10,8 @@ import numpy as np
 #
 # ---------------------------------------------------------------------- #
 
+import os
+import numpy as np
 import xarray as xr
 import re
 from nansat import Nansat, Domain, NSR
@@ -30,11 +29,20 @@ path_to_HV_files = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_im
 #path_to_HV_files = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/HV_40'
 
 # Directory containing the SAFE formatted Sentinel-1 images
-safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe_test'
 
-output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/batch_output'
+safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe'
+#safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe_test'
+
+#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/batch_output'
+#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/52-82_orbit_2022-2023_batch_output_combined_dist'
+#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/51-82_masked_output_experiment'
+
+output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/51-82_reverse_pm_for_distortion_experiment'
+
+
 
 input_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/one_flow_input'
+
 # -----------------------------
 # Regular Expressions
 # -----------------------------
@@ -61,8 +69,8 @@ S1_safe_regex = re.compile(S1_safe_regex)
 # -----------------------------
 
 # Load the data grid inforamtion extracted from BArents2.5 model 
-save_path_input = os.path.join(input_folder, "barent_grid.npz")
-data = np.load(save_path_input)
+grid_path_input = os.path.join(input_folder, "barent_grid.npz")
+data = np.load(grid_path_input)
 
 
 # Extract the X, Y, longitude, and latitude coordinates
@@ -77,3 +85,19 @@ proj4 = str(data['proj4'])
 
 # Convert the proj4 string to a Nansat spatial reference object
 srs = NSR(proj4)
+
+# ----------------------------------------------------
+# Filtering parameters to get the best reference drift
+# ----------------------------------------------------
+
+# Hessian filter  for good pixel index (gpi1) based on hessian value
+hessian=8
+
+# Number of neighbors filter gpi2 combining hessian and neighbors with drift values count
+neighbors=2
+
+# Setting limits for total displacement range for the colorbar
+# Alternative is to use output of sar drift plotting but then they won't be comparable in between different scenes
+
+disp_legend_min = 0
+disp_legend_max = 100 # change to smaller number if time gap between SAR1 and SAR2 is less than 48 hours

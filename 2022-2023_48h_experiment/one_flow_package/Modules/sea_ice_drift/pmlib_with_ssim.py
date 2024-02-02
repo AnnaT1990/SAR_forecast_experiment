@@ -113,7 +113,7 @@ def get_template(img, c, r, a, s, rot_order=0, **kwargs):
     offset = np.array([r, c]) - tc.dot(transform)
 
     t = nd.interpolation.affine_transform(
-        img, transform.T, order=rot_order, offset=offset, output_shape=(s, s), cval=0.0, output=np.uint8)
+        img, transform.T, order=rot_order, offset=offset, output_shape=(s, s), cval=0.0, output=np.uint8) #uint8 float32)
 
     return t
 

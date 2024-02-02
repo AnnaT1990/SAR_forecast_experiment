@@ -102,7 +102,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     except Exception as e:
         print(f"Failed to create {output_dir_path}. Error: {e}")
         
-    # Create directory for saving output flots for FT and PM for SAR1-SAR2 drift retrivieal
+    # Create directory for saving output plots for FT and PM for SAR1-SAR2 drift retrivieal
     hh_hv_pm_plots_dir = os.path.join(output_dir_path,"hh_hv_pm_plots")
     try:
         os.makedirs(hh_hv_pm_plots_dir, exist_ok=True)
@@ -130,8 +130,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
         x, y = mod_dom.get_geolocation_grids(dst_srs=srs)
         # Save domain grid variables the same for all pairs
         save_name = 'domain_output'
-        sar_drift_output_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_folder, save_name,
-                                                                         X=X_subset, Y=Y_subset)
+        SAR1_SAR2_drift_retrieval.save_results_to_npz(output_folder, save_name, X=X_subset, Y=Y_subset)
     
     if dst_dom is None:
         dst_dom = Domain(srs, f'-te {min(X_subset.data)} {min(Y_subset.data) - dst_res * 2} {max(X_subset.data) + dst_res} {max(Y_subset.data)} -tr {dst_res} {dst_res}')
@@ -157,8 +156,8 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
     # Save domain grid variables each own for every pair
     save_name = 'domain_output'
-    sar_drift_output_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_dir_path, save_name,
-                                                                         X=X_subset, Y=Y_subset)
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_dir_path, save_name,
+                                                X=X_subset, Y=Y_subset)
                                                                          
     '''    
     
@@ -175,94 +174,181 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     rows1, cols1 = mod_dom.shape()
     print("mod_dom corner coordinates:", mod_dom.transform_points([0,cols1-1,0,cols1-1], [0,0,rows1-1,rows1-1], dst_srs=srs))
     
-    #print("1. Nansat objects created,  model and comparison domains defined.")
     #======================================================================
-    # 3.   Retrieve SAR reference drift
+    # 3.   Retrieve SAR reference drift with caching 
     #----------------------------------------------------------------------
     
-    # 3.1. Run feature tracking and pattern matching for HV
+    # Import sar drift data from cache  (Such data used for new warping but doesn't create distortions for SAR1-SAR2 PM)
     
-   
-    # Run feature tracking and plot results  
-    c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv, FT=True)
-    # Check the number of keypoints
-    if len(c1_hv) >= 4:
-        print(f"Enough keypoints for PM -  {len(c1_hv)} > 4")
-    else:
-        print(f"Not enough key points for PM - {len(c1_hv)} < 4, skipping FT")
-        c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv, FT= False)
-    
-    #Run pattern matching and plot results
-    upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(plots_dir_hv, x, y, 
-                                                               lon1pm, lat1pm, n1_hv, c1_hv, r1_hv, n2_hv, c2_hv, r2_hv, srs, 
-                                                               #min_border=200,
-                                                               #max_border=200,
-                                                               #angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
-                                                               min_border=10, #test
-                                                               max_border=10, #test
-                                                               angles=[0]) #test
-                                                               
-    
-    # 3.2. Run feature tracking and pattern matching for HH
-    
-    # HH Processing
-    # Run feature tracking and plot results 
-    c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh, FT=True)
-    # Check the number of keypoints
-    if len(c1_hh) >= 4:
-        print(f"Enough keypoints for PM -  {len(c1_hh)} > 4")
-    else:
-        print(f"Not enough key points for PM - {len(c1_hh)} < 4, skipping FT")
-        c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh, FT= False)
-    
-    #Run pattern matching and plot results
-    upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh = SAR1_SAR2_drift_retrieval.run_pattern_matching(plots_dir_hh, x, y, 
-                                                               lon1pm, lat1pm, n1_hh, c1_hh, r1_hh, n2_hh, c2_hh, r2_hh,srs, 
-                                                               #min_border=200,
-                                                               #max_border=200,
-                                                               #angles=[-50, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 50 ])
-                                                               min_border=10, #test
-                                                               max_border=10, #test
-                                                               angles=[0]) #test
-                                                               
-    
-    
-    # 3.3. Get combined drift and all textural parameters
-    
-    # Combining hh and hv results based on hessian threshold
-    folder_name = "hh_hv_combined"
-    upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm = SAR1_SAR2_drift_retrieval.combine_based_on_hessian(hh_hv_pm_plots_dir, folder_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh, upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv)
-   
-    # 3.4.  Filter drift data with the good pixel indices based on hessian and neighbor thresholds.
-    
-    #Returns:
-    #    - gpi1: Good pixel index based on hessian value
-    #    - gpi2: Good pixel index combining hessian and neighbors count 
-
-    # Calculate gpi mask
-    gpi1, gpi2 = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm, h_threshold=hessian, neighbors_threshold=neighbors)
-    
-        
-    # Plot the filtering results
-    sar_disp_min, sar_disp_max = SAR1_SAR2_drift_retrieval.plot_filter_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi1, gpi2, disp_legend_min, disp_legend_max, hessian, neighbors)
-    
-    
-    # Create directory for saving outputs for each pair of images (named after the timestamps of two images)
+    # Chech if output folder with data exist
     output_data_dir = os.path.join(output_dir_path, "output_data")
-    try:
-        os.makedirs(output_data_dir, exist_ok=True)
-        print(f"Successfully created {output_data_dir}")
-    except Exception as e:
-        print(f"Failed to create {output_data_dir}. Error: {e}")
     
-    #  Save final reference drift, its parameters and filtering arrays to npy files
-    save_name = 'sar_drift_output'
+    npz_file_path = os.path.join(output_data_dir, 'sar_drift_output.npz')
+
+    # Check if the .npz file exists
+    if os.path.exists(npz_file_path):
+        # Load the contents of the .npz file
+        npz_data = np.load(npz_file_path)
+
+        # Extract parameters
+        upm = npz_data.get('upm', None) 
+        vpm = npz_data.get('vpm', None)  
+        apm = npz_data.get('apm', None)            
+        rpm = npz_data.get('rpm', None)   
+        hpm = npz_data.get('hpm', None) 
+        ssim = npz_data.get('ssim', None)  
+        lon2pm = npz_data.get('lon2pm', None)            
+        lat2pm = npz_data.get('lat2pm', None)
+        gpi1 = npz_data.get('gpi1', None) 
+        gpi2 = npz_data.get('gpi2', None)  
+        
+        if all(param is not None for param in [upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm, gpi1, gpi2]):
+            print("Data extracted successfully.")
+            
+        else:
+            print("Some data could not be extracted.")
+    else:
+        print("The file does not exist, calculate pattern matching:", npz_file_path)
+    
+    
+        # 3.1. Run feature tracking and pattern matching for HV
+
+        # Run feature tracking and plot results  
+        c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv, FT=True)
+        # Check the number of keypoints
+        if len(c1_hv) >= 4:
+            print(f"Enough keypoints for PM -  {len(c1_hv)} > 4")
+        else:
+            print(f"Not enough key points for PM - {len(c1_hv)} < 4, skipping FT")
+            c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv, FT= False)
+
+        #Run pattern matching and plot results
+        upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(plots_dir_hv, x, y, 
+                                                                   lon1pm, lat1pm, n1_hv, c1_hv, r1_hv, n2_hv, c2_hv, r2_hv, srs, 
+                                                                   min_border=400,
+                                                                   max_border=400,
+                                                                   angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+                                                                   #min_border=10, #test
+                                                                   #max_border=10, #test
+                                                                   #angles=[0,]) #test
+
+
+        # 3.2. Run feature tracking and pattern matching for HH
+
+        # HH Processing
+        # Run feature tracking and plot results 
+        c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh, FT=True)
+        # Check the number of keypoints
+        if len(c1_hh) >= 4:
+            print(f"Enough keypoints for PM -  {len(c1_hh)} > 4")
+        else:
+            print(f"Not enough key points for PM - {len(c1_hh)} < 4, skipping FT")
+            c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh, FT= False)
+
+        #Run pattern matching and plot results
+        upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh = SAR1_SAR2_drift_retrieval.run_pattern_matching(plots_dir_hh, x, y, 
+                                                                   lon1pm, lat1pm, n1_hh, c1_hh, r1_hh, n2_hh, c2_hh, r2_hh,srs, 
+                                                                   min_border=400,
+                                                                   max_border=400,
+                                                                   angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+                                                                   #min_border=10, #test
+                                                                   #max_border=10, #test
+                                                                   #angles=[0]) #test
+
+
+
+        # 3.3. Get combined drift and all textural parameters
+
+        # Combining hh and hv results based on hessian threshold
+        folder_name = "hh_hv_combined"
+        upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm = SAR1_SAR2_drift_retrieval.combine_based_on_hessian(hh_hv_pm_plots_dir, folder_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh, upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv)
+
+        # 3.4.  Filter drift data with the good pixel indices based on hessian and neighbor thresholds.
+
+        #Returns:
+        #    - gpi1: Good pixel index based on hessian value
+        #    - gpi2: Good pixel index combining hessian and neighbors count 
+
+        # Calculate gpi mask
+        gpi1, gpi2 = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm, h_threshold=hessian, neighbors_threshold=neighbors)
+
+
+        # Plot the filtering results
+        sar_disp_min, sar_disp_max = SAR1_SAR2_drift_retrieval.plot_filter_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi1, gpi2, disp_legend_min, disp_legend_max, hessian, neighbors)
+
+
+        # Create directory for saving outputs for each pair of images (named after the timestamps of two images)
+        output_data_dir = os.path.join(output_dir_path, "output_data")
+        try:
+            os.makedirs(output_data_dir, exist_ok=True)
+            print(f"Successfully created {output_data_dir}")
+        except Exception as e:
+            print(f"Failed to create {output_data_dir}. Error: {e}")
+
+        #  Save final reference drift, its parameters and filtering arrays to npy files
+        save_name = 'sar_drift_output'
+        SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+                                                                                 upm=upm, vpm=vpm, apm=apm, rpm=rpm, 
+                                                                                 hpm=hpm, ssim=ssim, lon2pm=lon2pm, 
+                                                                                 lat2pm=lat2pm, gpi1=gpi1, gpi2=gpi2)
+    
+    #======================================================================
+    # Warping good drift mask using sar and model drift for further intercomparison. 
+    #----------------------------------------------------------------------.
+    
+    good_pixels = gpi2
+    mask_pm = ~good_pixels # mask out low quality or NaN
+    
+    # Convert the boolean mask to a float mask before warping
+    float_gpi_mask = gpi2.astype(float)
+    
+    gpi_mask_sar_warp = warping_with_domain.warp_with_uv(mod_dom, float_gpi_mask, mod_dom, upm, vpm, mask_pm, mod_dom)
+    gpi_warped = gpi_mask_sar_warp > 0.8
+    
+    #plot masks for testing
+    warped_gpi_plots = os.path.join(output_dir_path, "warped_gpi_plots")
+    os.makedirs(warped_gpi_plots, exist_ok=True)
+    
+    name = "gpi_sar12"
+    SAR1_SAR2_drift_retrieval.plot_array(warped_gpi_plots, name, gpi2, x, y)
+    
+    name = "gpi_warped_float"
+    SAR1_SAR2_drift_retrieval.plot_array(warped_gpi_plots, name, gpi_mask_sar_warp, x, y)
+    
+    name = "gpi_warped_bool"
+    SAR1_SAR2_drift_retrieval.plot_array(warped_gpi_plots, name, gpi_warped, x, y)
+    
+    
+    save_name = 'warped_masks'
     SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
-                                                                             upm=upm, vpm=vpm, apm=apm, rpm=rpm, 
-                                                                             hpm=hpm, ssim=ssim, lon2pm=lon2pm, 
-                                                                             lat2pm=lat2pm, gpi1=gpi1, gpi2=gpi2)
+                                                  sar_warped_mask=gpi_warped)
     
-    #print("2. SAR reference drift Retrieved")
+    #======================================================================
+    # Warping hessian for later calculation of good pizel mask using sar and model drift for further intercomparison. 
+    #----------------------------------------------------------------------.
+    
+    good_pixels = gpi2
+    mask_pm = ~good_pixels # mask out low quality or NaN
+    
+    
+    hpm_sar_warp = warping_with_domain.warp_with_uv(mod_dom, hpm, mod_dom, upm, vpm, mask_pm, mod_dom)
+    
+    #plot masks for testing
+    warped_hpm_plots = os.path.join(output_dir_path, "warped_hpm_plots")
+    os.makedirs(warped_hpm_plots, exist_ok=True)
+    
+    name = "hpm_sar12"
+    SAR1_SAR2_drift_retrieval.plot_array(warped_hpm_plots, name, hpm, x, y)
+    
+    name = "hpm_warped"
+    SAR1_SAR2_drift_retrieval.plot_array(warped_hpm_plots, name, hpm_sar_warp, x, y)
+    
+    
+    save_name = 'warped_hpm'
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+                                                  warped_hpm=hpm_sar_warp)
+    
+    
     #======================================================================
     # 4. Warp SAR1 image with the reference SAR drift and compare all SARs in the comparison domain
     #----------------------------------------------------------------------
@@ -271,12 +357,14 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     # Warp SAR1 with SAR-drift compenstaion/displacement
     good_pixels = gpi2
     mask_pm = ~good_pixels # mask out low quality or NaN
+    warped_mask = ~gpi_warped
+    
     s1_dst_dom_S_hv = warping_with_domain.warp_with_uv(n1_hv, n1_hv[1], mod_dom, upm, vpm, mask_pm, dst_dom)
     s1_dst_dom_S_hh = warping_with_domain.warp_with_uv(n1_hh, n1_hh[1], mod_dom, upm, vpm, mask_pm, dst_dom)
-    s1_dst_dom_S_hv_masked = warping_with_domain.warp_and_mask_with_uv(n1_hv, n1_hv[1], mod_dom, upm, vpm, mask_pm, dst_dom, max_dist=2, fill_value=0)
-    s1_dst_dom_S_hh_masked = warping_with_domain.warp_and_mask_with_uv(n1_hh, n1_hh[1], mod_dom, upm, vpm, mask_pm, dst_dom, max_dist=2, fill_value=0)
-    s1_dst_dom_S_hv_masked0 = warping_with_domain.warp_and_mask_with_uv(n1_hv, n1_hv[1], mod_dom, upm, vpm, mask_pm, dst_dom, max_dist=0, fill_value=0)
-    s1_dst_dom_S_hh_masked0 = warping_with_domain.warp_and_mask_with_uv(n1_hh, n1_hh[1], mod_dom, upm, vpm, mask_pm, dst_dom, max_dist=0, fill_value=0)
+    s1_dst_dom_S_hv_masked1 = warping_with_domain.warp_and_mask_with_uv(n1_hv, n1_hv[1], mod_dom, upm, vpm, mask_pm,warped_mask, dst_dom, max_dist=1, fill_value=0)
+    s1_dst_dom_S_hh_masked1 = warping_with_domain.warp_and_mask_with_uv(n1_hh, n1_hh[1], mod_dom, upm, vpm, mask_pm,warped_mask, dst_dom, max_dist=1, fill_value=0)
+    s1_dst_dom_S_hv_masked0 = warping_with_domain.warp_and_mask_with_uv(n1_hv, n1_hv[1], mod_dom, upm, vpm, mask_pm,warped_mask, dst_dom, max_dist=0, fill_value=0)
+    s1_dst_dom_S_hh_masked0 = warping_with_domain.warp_and_mask_with_uv(n1_hh, n1_hh[1], mod_dom, upm, vpm, mask_pm,warped_mask, dst_dom, max_dist=0, fill_value=0)
     
     
     # Warp SAR2 to the comparison domain
@@ -303,8 +391,8 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
                                              "forecast_with_sar_ref_drift_masked_2dist", 
                                              s1_dst_dom_hv, s1_dst_dom_hh,
                                              s2_dst_dom_hv, s2_dst_dom_hh,
-                                             s1_dst_dom_S_hv, s1_dst_dom_S_hh_masked,
-                                             gamma_value=1.2)  #s1_dst_dom_S_hv_masked
+                                             s1_dst_dom_S_hv, s1_dst_dom_S_hh_masked1,
+                                             gamma_value=1.2)  #s1_dst_dom_S_hv_masked1
     warping_with_domain.plot_sar_forecast_images(warping_plots_save_dir, 
                                          "forecast_with_sar_ref_drift_masked_0dist", 
                                          s1_dst_dom_hv, s1_dst_dom_hh,
@@ -314,26 +402,37 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
 
     # 5.4. Save warped array to data output
     save_name = 'sar_warped_arrays'
-    sar_distort_data_error_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name, 
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name, 
                                                                                 sar_warped_hv=s1_dst_dom_S_hv, sar_warped_hh=s1_dst_dom_S_hh,
-                                                                                sar_warped_hv_masked2 = s1_dst_dom_S_hv_masked,
-                                                                                sar_warped_hh_masked2 = s1_dst_dom_S_hh_masked,
+                                                                                sar_warped_hv_masked2 = s1_dst_dom_S_hv_masked1,
+                                                                                sar_warped_hh_masked2 = s1_dst_dom_S_hh_masked1,
                                                                                 sar_warped_hv_masked0 = s1_dst_dom_S_hv_masked0, 
                                                                                 sar_warped_hh_masked0 = s1_dst_dom_S_hh_masked0)
     
     # 5.5. Save SAR1 and SAR2 arrays warped to dst domain
     save_name = 'sar1_sar2_dst_domain'
-    sar_distort_data_error_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name, 
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name, 
                                                                                 s2_dst_dom_hv=s2_dst_dom_hv,
                                                                                 s2_dst_dom_hh=s2_dst_dom_hh,
                                                                                 s1_dst_dom_hv = s1_dst_dom_hv,
                                                                                 s1_dst_dom_hh = s1_dst_dom_hh)
     
-    #print("3. Warped SAR1 image with the reference SAR drift.")
         
     #======================================================================
     # 5. Calculate  sar warping quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted)
     #----------------------------------------------------------------------
+    
+    
+    # Convert to float
+    #s1_dst_dom_S_hv = s1_dst_dom_S_hv.astype(float)
+    # Replace 0 with np.nan
+    #s1_dst_dom_S_hv[s1_dst_dom_S_hv == 0] = np.nan
+    
+    # Convert to float
+    #s2_dst_dom_hv = s2_dst_dom_hv.astype(float)
+    # Replace 0 with np.nan
+    #s2_dst_dom_hv[s2_dst_dom_hv == 0] = np.nan
+    
     
     # 5.1. Make new nansat objects for comparison
     n_s1_predict = Nansat.from_domain(dst_dom, array = s1_dst_dom_S_hv)
@@ -347,10 +446,17 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     except Exception as e:
         print(f"Failed to create {distort_plots_dir}. Error: {e}")
     
+    
+    '''
+    
+    #--------------------------------------------------
+    # Direct way (SAR2_predicted to SAR2 comparison)
+    #--------------------------------------------------
+    
     # Creating directory for saving distortion plots
     sar_distort_plots_dir = os.path.join(distort_plots_dir, f"sar_distort_plots")
     os.makedirs(sar_distort_plots_dir, exist_ok=True)
-        
+      
     # 5.3. Calculate realibility indexes 
     # 5.3.1. Run feature tracking and plot results 
     c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n_s1_predict, n_s2, sar_distort_plots_dir, FT=False)
@@ -358,72 +464,178 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     # 5.3.2. Run pattern matching and plot results
     upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(sar_distort_plots_dir, x, y, 
                                                                lon1pm, lat1pm, n_s1_predict, c1_alg_hv, r1_alg_hv, n_s2, c2_alg_hv, r2_alg_hv, srs, 
-                                                               #min_border=200,
-                                                               #max_border=200,
-                                                               #angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
-                                                               min_border=10, #test
-                                                               max_border=10, #test
-                                                               angles=[0]) #test
+                                                               min_border=200,
+                                                               max_border=200,
+                                                               angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
+                                                               #angles=[-15,-12,-9,-6, -3, 0, 3, 6, 9, 12, 15]) #light
+                                                           
+    # Calculate gpi mask
+    gpi1_alg_hv, gpi2_alg_hv = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm_alg_hv, h_threshold=hessian, neighbors_threshold=neighbors)
+    
+    # 5.4. Save comparison results, its parameters and filtering arrays to npy files
+    save_name = 'sar_distort_error_data'
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+                                                                             upm=upm_alg_hv, vpm=vpm_alg_hv, apm=apm_alg_hv, rpm=rpm_alg_hv, 
+                                                                             hpm=hpm_alg_hv, ssim=ssim_alg_hv, lon2pm=lon2pm_alg_hv, 
+                                                                             lat2pm=lat2pm_alg_hv, gpi1=gpi1_alg_hv, gpi2=gpi2_alg_hv)
+    '''
+    
+    #--------------------------------------------------
+    # Reverse way (SAR2 to SAR2_predicted comparison)
+    #--------------------------------------------------
+    
+    # Creating directory for saving distortion plots
+    sar_distort_plots_dir = os.path.join(distort_plots_dir, f"sar_distort_plots_400_50")
+    os.makedirs(sar_distort_plots_dir, exist_ok=True)
+    
+    # 5.3. Calculate reverse SAR2 - SAR2_predicted realibility indexes 
+    # 5.3.1. Run feature tracking and plot results 
+    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n_s2, n_s1_predict, sar_distort_plots_dir, FT=False)
+    
+    # 5.3.2. Run pattern matching and plot results
+    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(sar_distort_plots_dir, x, y, 
+                                                               lon1pm, lat1pm, n_s2, c1_alg_hv, r1_alg_hv, n_s1_predict, c2_alg_hv, r2_alg_hv, srs, 
+                                                               min_border=400,
+                                                               max_border=400,
+                                                               angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
+                                                               #angles=[-15,-12,-9,-6, -3, 0, 3, 6, 9, 12, 15]) #light
+    # Calculate gpi mask
+    gpi1_alg_hv, gpi2_alg_hv = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm_alg_hv, h_threshold=hessian, neighbors_threshold=neighbors)
+    
+    # 5.4. Save comparison results, its parameters and filtering arrays to npy files
+    save_name = 'sar_distort_error_data_400_50'
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+                                                                             upm=upm_alg_hv, vpm=vpm_alg_hv, apm=apm_alg_hv, rpm=rpm_alg_hv, 
+                                                                             hpm=hpm_alg_hv, ssim=ssim_alg_hv, lon2pm=lon2pm_alg_hv, 
+                                                                             lat2pm=lat2pm_alg_hv, gpi1=gpi1_alg_hv, gpi2=gpi2_alg_hv)
+                    
+    # 5.3. Calculate reverse SAR2 - SAR2_predicted realibility indexes with strict conditions 
+    
+    # Creating directory for saving distortion plots
+    sar_distort_plots_dir = os.path.join(distort_plots_dir, f"sar_distort_plots_50_12")
+    os.makedirs(sar_distort_plots_dir, exist_ok=True)
+    
+    # 5.3.1. Run feature tracking and plot results 
+    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n_s2, n_s1_predict, sar_distort_plots_dir, FT=False)
+    
+    # 5.3.2. Run pattern matching and plot results
+    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(sar_distort_plots_dir, x, y, 
+                                                               lon1pm, lat1pm,  n_s2, c1_alg_hv, r1_alg_hv, n_s1_predict, c2_alg_hv, r2_alg_hv, srs, 
+                                                               min_border=50,
+                                                               max_border=50,
+                                                               angles=[-12, -9, -6 -3, 0, 3, 6, 9, 12 ])
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
                                                                #angles=[-15,-12,-9,-6, -3, 0, 3, 6, 9, 12, 15]) #light
                                                                
     # Calculate gpi mask
     gpi1_alg_hv, gpi2_alg_hv = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm_alg_hv, h_threshold=hessian, neighbors_threshold=neighbors)
     
     # 5.4. Save comparison results, its parameters and filtering arrays to npy files
-    save_name = 'sar_distort_error_data'
-    sar_distort_data_error_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+    save_name = 'sar_distort_error_data_50_12'
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
                                                                              upm=upm_alg_hv, vpm=vpm_alg_hv, apm=apm_alg_hv, rpm=rpm_alg_hv, 
                                                                              hpm=hpm_alg_hv, ssim=ssim_alg_hv, lon2pm=lon2pm_alg_hv, 
                                                                              lat2pm=lat2pm_alg_hv, gpi1=gpi1_alg_hv, gpi2=gpi2_alg_hv)
 
 
-    #print("4. Calculated quality parametrs (corr, hess, ssim) for the predicted SAR2 (by calculating pattern matching on SAR2 and SAR2_predicted.")
+    
     #======================================================================
-    # 6. Prepare model data for retrieving drift fields.
+    # 6. Prepare model data for retrieving drift fields (with caching)
     #----------------------------------------------------------------------
     
-    # 6.1.xtract time period based on teh SAR pair timestamp
+    # Update cache so it would use the same input folder.
+    # Import model drift data from cache  
+    # As server died I want to import model data from another output
+    model_output_path =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/52-82_orbit_2022-2023_batch_output_combined_dist'
     
-    # SAR images timestamps
-    t_sar1 = pair[0].timestamp
-    t_sar2 = pair[1].timestamp
-    
-    # Rounding the SAR timestamps to align with the nearest whole hour of model timestamps
-    t_start = model_data_processing.round_start_time(t_sar1)
-    t_end = model_data_processing.round_end_time(t_sar2)
+    # Your existing path
+    output_dir_path = os.path.join(output_folder, f"{pair[0].timestamp.strftime('%Y%m%dT%H%M%S')}_{pair[1].timestamp.strftime('%Y%m%dT%H%M%S')}")
 
-    print(f'SAR1 time is {t_sar1}, Model start time for the time period is {t_start}')
-    print(f'SAR2 time is {t_sar2}, Model end time for the time period is {t_end}')
-    
-    # 6.2. Set the time period for extracting hourly model data
-    time_period = pd.date_range(t_start, t_end, freq='H')
+    # Extract the last part of the output_dir_path
+    folder_name = os.path.basename(output_dir_path)
 
-    # 6.3. Calculate the difference between model start and end time and SAR1 and SAR2 timestamps
-    time_diff_start, time_diff_end, total_time_diff = model_data_processing.time_difference(t_sar1, t_sar2,  t_start, t_end)
+    # Define your new path (assuming model_output_path is already defined)
+    check_model_data_path = os.path.join(model_output_path, folder_name)
+    # Assuming check_model_data_path is already defined
+    npz_file_path = os.path.join(check_model_data_path, 'mod_drift_output', 'mod_drift_output.npz')
 
-    # 6.4. Calculate a hourly rolling average for 24 ensembles
-    avg_ice_u, avg_ice_v =  model_data_processing.rolling_avg_24_ensembles(jt, time_period, min_row, max_row, min_col, max_col)
-    
-    # 6.5. Calculating cummulative (integrated) drift for the subset extent
+    # Check if the .npz file exists
+    if os.path.exists(npz_file_path):
+        # Load the contents of the .npz file
+        npz_data = np.load(npz_file_path)
 
-    xx_b_subset, yy_b_subset, cum_dx_b_subset, cum_dy_b_subset = model_data_processing.cumulative_ice_displacement(X_subset, Y_subset, x, y, avg_ice_u, avg_ice_v, time_period, time_diff_start,time_diff_end)
+        # Extract parameters
+        model_u = npz_data.get('model_u', None) 
+        model_v = npz_data.get('model_v', None)  
+        y2 = npz_data.get('y2', None)            
+        x2 = npz_data.get('x2', None)            
 
-    # 6.6. Get the final integrated displacement
-    model_u = np.reshape(cum_dx_b_subset[-1], x.shape)
-    model_v = np.reshape(cum_dy_b_subset[-1], x.shape)
-    x2 = np.reshape(xx_b_subset[-1], x.shape)
-    y2 = np.reshape(yy_b_subset[-1], x.shape)
+        # Check if the data was successfully extracted
+        if model_u is not None and model_v is not None and y2 is not None and x2 is not None:
+            print("Data extracted successfully.")
+            
+            #Save final drift, its parameters to npy files
+            save_name = 'mod_drift_output'
+            SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+                                                          model_u=model_u, model_v=model_v,
+                                                          y2=y2, x2=x2)
+            #Save the plot with model drift (using sar drift colourbar range)
+            model_data_processing.plot_model_drift_results(drift_plot_save_path, x, y, model_u, model_v, disp_legend_min, disp_legend_max)
+            model_data_processing.plot_model_drift_gpi_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi2, model_u, model_v, disp_legend_min, disp_legend_max)
+        else:
+            print("Some data could not be extracted.")
+    else:
+        print("The file does not exist, trying to connect to server:", npz_file_path)
+
+        # 6.1. Extract time period based on the SAR pair timestamp
+
+        # SAR images timestamps
+        t_sar1 = pair[0].timestamp
+        t_sar2 = pair[1].timestamp
+
+        # Rounding the SAR timestamps to align with the nearest whole hour of model timestamps
+        t_start = model_data_processing.round_start_time(t_sar1)
+        t_end = model_data_processing.round_end_time(t_sar2)
+
+        print(f'SAR1 time is {t_sar1}, Model start time for the time period is {t_start}')
+        print(f'SAR2 time is {t_sar2}, Model end time for the time period is {t_end}')
+
+        # 6.2. Set the time period for extracting hourly model data
+        time_period = pd.date_range(t_start, t_end, freq='H')
+
+        # 6.3. Calculate the difference between model start and end time and SAR1 and SAR2 timestamps
+        time_diff_start, time_diff_end, total_time_diff = model_data_processing.time_difference(t_sar1, t_sar2,  t_start, t_end)
+
+        # 6.4. Calculate a hourly rolling average for 24 ensembles
+        avg_ice_u, avg_ice_v =  model_data_processing.rolling_avg_24_ensembles(jt, time_period, min_row, max_row, min_col, max_col)
+
+        # 6.5. Calculating cummulative (integrated) drift for the subset extent
+
+        xx_b_subset, yy_b_subset, cum_dx_b_subset, cum_dy_b_subset = model_data_processing.cumulative_ice_displacement(X_subset, Y_subset, x, y, avg_ice_u, avg_ice_v, time_period, time_diff_start,time_diff_end)
+
+        # 6.6. Get the final integrated displacement
+        model_u = np.reshape(cum_dx_b_subset[-1], x.shape)
+        model_v = np.reshape(cum_dy_b_subset[-1], x.shape)
+        x2 = np.reshape(xx_b_subset[-1], x.shape)
+        y2 = np.reshape(yy_b_subset[-1], x.shape)
+
+        # 6.7. Save final drift, its parameters to npy files
+        save_name = 'mod_drift_output'
+        SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+                                                                                 model_u=model_u, model_v=model_v,
+                                                                             y2=y2, x2=x2)
+        # 6.8. Save the plot with model drift (using sar drift colourbar range)
+        model_data_processing.plot_model_drift_results(drift_plot_save_path, x, y, model_u, model_v, disp_legend_min, disp_legend_max)
+        model_data_processing.plot_model_drift_gpi_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi2, model_u, model_v, disp_legend_min, disp_legend_max)
     
-    # 6.7. Save final drift, its parameters to npy files
-    save_name = 'mod_drift_output'
-    mod_drift_output_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
-                                                                             model_u=model_u, model_v=model_v,
-                                                                         y2=y2, x2=x2)
-    # 6.8. Save the plot with model drift (using sar drift colourbar range)
-    model_data_processing.plot_model_drift_results(drift_plot_save_path, x, y, model_u, model_v, disp_legend_min, disp_legend_max)
-    model_data_processing.plot_model_drift_gpi_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi2, model_u, model_v, disp_legend_min, disp_legend_max)
-    
-    #print("5. Model data for retrieving drift fields prepared.")
     
     #======================================================================
     # 7. Warp SAR1 image with the model SAR drift and compare all SARs in the comparison domain
@@ -458,7 +670,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
 
     # 7.3. Save warped array to data output
     save_name = 'mod_warped_arrays'
-    sar_distort_data_error_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name, 
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name, 
                                                                                 mod_warped_hv=s1_dst_dom_S_hv, mod_warped_hh=s1_dst_dom_S_hh)
     
     
@@ -469,9 +681,29 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     #----------------------------------------------------------------------
     
     # 8.1. Make new nansat objects for comparison
+    
+    # Convert to float
+    #s1_dst_dom_S_hv = s1_dst_dom_S_hv.astype(float)
+    # Replace 0 with np.nan
+    #s1_dst_dom_S_hv[s1_dst_dom_S_hv == 0] = np.nan
+    
+    # Convert to float
+    #s2_dst_dom_hv = s2_dst_dom_hv.astype(float)
+    # Replace 0 with np.nan
+    #s2_dst_dom_hv[s2_dst_dom_hv == 0] = np.nan
+    
+    # 5.1. Make new nansat objects for comparison
     n_s1_predict = Nansat.from_domain(dst_dom, array = s1_dst_dom_S_hv)
     n_s2 = Nansat.from_domain(dst_dom, array = s2_dst_dom_hv)
-
+    
+    
+    
+    '''
+    
+    #--------------------------------------------------
+    # Direct way (SAR2_predicted to SAR2 comparison)
+    #--------------------------------------------------
+    
     # 8.2. Create directory for saving plots 
     mod_distort_plots_dir = os.path.join(distort_plots_dir, f"model_distortion_plots")
     try:
@@ -479,7 +711,8 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
         print(f"Successfully created {mod_distort_plots_dir}")
     except Exception as e:
         print(f"Failed to create {mod_distort_plots_dir}. Error: {e}")
-
+    
+    
     # Calculate realibility indexes 
     # 8.4. Run feature tracking on a regular grid for ares where drift errors wasn't strong but FT struggles
     c1_mod_hv, r1_mod_hv, c2_mod_hv, r2_mod_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n_s1_predict, n_s2, mod_distort_plots_dir, FT=False)
@@ -487,21 +720,21 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     # 8.5. Run pattern matching and plot results
     upm_mod_hv, vpm_mod_hv, apm_mod_hv, rpm_mod_hv, hpm_mod_hv, ssim_mod_hv, lon2pm_mod_hv, lat2pm_mod_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(mod_distort_plots_dir, x, y, 
                                                                lon1pm, lat1pm, n_s1_predict, c1_mod_hv, r1_mod_hv, n_s2, c2_mod_hv, r2_mod_hv, srs, 
-                                                               #min_border=200,
-                                                               #max_border=200,
-                                                               #angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
-                                                               min_border=10, #test
-                                                               max_border=10, #test
-                                                               angles=[0]) #test
+                                                               min_border=200,
+                                                               max_border=200,
+                                                               angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
                                                                
     
     # Calculate gpi mask
     gpi1_mod_hv, gpi2_mod_hv = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm_mod_hv, h_threshold=hessian, neighbors_threshold=neighbors)
-        
+       
     
     # 8.6. Save comparison results, its parameters and filtering arrays to npy files
     save_name = 'model_distort_error_data'
-    mod_distort_data_error_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
                                                                              upm=upm_mod_hv, vpm=vpm_mod_hv, apm=apm_mod_hv, rpm=rpm_mod_hv, 
                                                                              hpm=hpm_mod_hv, ssim=ssim_mod_hv, lon2pm=lon2pm_mod_hv, 
                                                                              lat2pm=lat2pm_mod_hv, gpi1=gpi1_mod_hv, gpi2=gpi2_mod_hv)
@@ -520,12 +753,12 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     # 8.8. Run pattern matching and plot results
     upm_mod_ft_hv, vpm_mod_ft_hv, apm_mod_ft_hv, rpm_mod_ft_hv, hpm_mod_ft_hv, ssim_mod_ft_hv, lon2pm_mod_ft_hv, lat2pm_mod_ft_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(mod_distort_plots_dir, x, y, 
                                                                lon1pm, lat1pm, n_s1_predict,  c1_mod_ft_hv, r1_mod_ft_hv, n_s2, c2_mod_ft_hv, r2_mod_ft_hv, srs, 
-                                                               #min_border=200,
-                                                               #max_border=200,
-                                                               #angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
-                                                               min_border=10, #test
-                                                               max_border=10, #test
-                                                               angles=[0]) #test
+                                                               min_border=200,
+                                                               max_border=200,
+                                                               angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
                                                                
     # Calculate gpi mask
     gpi1_mod_ft_hv, gpi2_mod_ft_hv = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm_mod_ft_hv, h_threshold=hessian, neighbors_threshold=neighbors)
@@ -533,7 +766,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
     # 8.9. Save comparison results, its parameters and filtering arrays to npy files
     save_name = 'model_distort_error_data_ft'
-    mod_distort_data_error_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
                                                                              upm=upm_mod_ft_hv, vpm=vpm_mod_ft_hv, apm=apm_mod_ft_hv, rpm=rpm_mod_ft_hv, 
                                                                              hpm=hpm_mod_ft_hv, ssim=ssim_mod_ft_hv, lon2pm=lon2pm_mod_ft_hv, 
                                                                              lat2pm=lat2pm_mod_ft_hv, gpi1=gpi1_mod_ft_hv, gpi2=gpi2_mod_ft_hv)
@@ -555,29 +788,86 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
     # 8.11. Save comparison results, its parameters and filtering arrays to npy files
     save_name = 'model_distort_error_data_combined'
-    mod_distort_data_error_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
                                                                              upm=upm_mod_comb, vpm=vpm_mod_comb, apm=apm_mod_comb, rpm=rpm_mod_comb, 
                                                                              hpm=hpm_mod_comb, ssim=ssim_mod_comb, lon2pm=lon2pm_mod_comb, 
                                                                              lat2pm=lat2pm_mod_comb, gpi1=gpi1_mod_comb, gpi2=gpi2_mod_comb)    
     
+    '''
     
-    #======================================================================
-    # 9. Warping good drift mask using sar and model drift for further intercomparison. 
-    #----------------------------------------------------------------------.
-   
-    good_pixels = gpi2
-    mask_pm = ~good_pixels # mask out low quality or NaN
     
-    # Convert the boolean mask to a float mask before warping
-    float_gpi_mask = gpi2.astype(float)
+    #--------------------------------------------------
+    # Reverse way (SAR2 to SAR2_predicted comparison)
+    #--------------------------------------------------
     
-    gpi_mask_sar_warp = warping_with_domain.warp_and_mask_with_uv(mod_dom, gpi2, mod_dom, upm, vpm, mask_pm, mod_dom, max_dist=0, fill_value=0)
-    gpi_mask_mod_warp = warping_with_domain.warp_and_mask_with_uv(mod_dom, gpi2, mod_dom, model_u, model_v, mask_pm, mod_dom, max_dist=0, fill_value=0)
+    # 8.2. Create directory for saving plots 
+    mod_distort_plots_dir = os.path.join(distort_plots_dir, f"model_distortion_plots_400_50")
+    try:
+        os.makedirs(mod_distort_plots_dir, exist_ok=True)
+        print(f"Successfully created {mod_distort_plots_dir}")
+    except Exception as e:
+        print(f"Failed to create {mod_distort_plots_dir}. Error: {e}")
     
-    save_name = 'warped_masks'
-    sar_distort_data_error_path = SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
-                                                                             sar_warped_mask=gpi_mask_sar_warp, model_warped_mask=gpi_mask_mod_warp)
+    # Calculate reverse SAR2 - SAR2_predicted realibility indexes
+    # 8.4. Run feature tracking on a regular grid for ares where drift errors wasn't strong but FT struggles
+    c1_mod_hv, r1_mod_hv, c2_mod_hv, r2_mod_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n_s2, n_s1_predict, mod_distort_plots_dir, FT=False)
+
+    # 8.5. Run pattern matching and plot results
+    upm_mod_hv, vpm_mod_hv, apm_mod_hv, rpm_mod_hv, hpm_mod_hv, ssim_mod_hv, lon2pm_mod_hv, lat2pm_mod_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(mod_distort_plots_dir, x, y, 
+                                                               lon1pm, lat1pm,n_s2  , c1_mod_hv, r1_mod_hv, n_s1_predict , c2_mod_hv, r2_mod_hv, srs, 
+                                                               min_border=400,
+                                                               max_border=400,
+                                                               angles=[-50, -45, -40, -35, -30, -25, -20, -15,-12, -9,-6, -3, 0, 3, 6, 9, 12,15, 20, 25, 30, 35, 40, 45, 50])
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
+                                                               
     
+    # Calculate gpi mask
+    gpi1_mod_hv, gpi2_mod_hv = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm_mod_hv, h_threshold=hessian, neighbors_threshold=neighbors)
+       
+    
+    # 8.6. Save comparison results, its parameters and filtering arrays to npy files
+    save_name = 'model_distort_error_data_400_50'
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+                                                                             upm=upm_mod_hv, vpm=vpm_mod_hv, apm=apm_mod_hv, rpm=rpm_mod_hv, 
+                                                                             hpm=hpm_mod_hv, ssim=ssim_mod_hv, lon2pm=lon2pm_mod_hv, 
+                                                                             lat2pm=lat2pm_mod_hv, gpi1=gpi1_mod_hv, gpi2=gpi2_mod_hv)
+    
+    # Calculate reverse SAR2 - SAR2_predicted realibility indexes with strict conditions 
+    # 8.2. Create directory for saving plots 
+    mod_distort_plots_dir = os.path.join(distort_plots_dir, f"model_distortion_plots_50_12")
+    try:
+        os.makedirs(mod_distort_plots_dir, exist_ok=True)
+        print(f"Successfully created {mod_distort_plots_dir}")
+    except Exception as e:
+        print(f"Failed to create {mod_distort_plots_dir}. Error: {e}")
+        
+    #Calculate reverse SAR2 - SAR2_predicted realibility indexes with strict conditions
+    # 8.4. Run feature tracking on a regular grid for ares where drift errors wasn't strong but FT struggles
+    c1_mod_hv, r1_mod_hv, c2_mod_hv, r2_mod_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n_s2, n_s1_predict, mod_distort_plots_dir, FT=False)
+
+    # 8.5. Run pattern matching and plot results
+    upm_mod_hv, vpm_mod_hv, apm_mod_hv, rpm_mod_hv, hpm_mod_hv, ssim_mod_hv, lon2pm_mod_hv, lat2pm_mod_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(mod_distort_plots_dir, x, y, 
+                                                               lon1pm, lat1pm,n_s2  , c1_mod_hv, r1_mod_hv, n_s1_predict , c2_mod_hv, r2_mod_hv, srs, 
+                                                               min_border=50,
+                                                               max_border=50,
+                                                               angles=[-12, -9, -6 -3, 0, 3, 6, 9, 12 ])
+                                                               #min_border=10, #test
+                                                               #max_border=10, #test
+                                                               #angles=[0]) #test
+                                                               
+    
+    # Calculate gpi mask
+    gpi1_mod_hv, gpi2_mod_hv = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm_mod_hv, h_threshold=hessian, neighbors_threshold=neighbors)
+       
+    
+    # 8.6. Save comparison results, its parameters and filtering arrays to npy files
+    save_name = 'model_distort_error_data_50_12'
+    SAR1_SAR2_drift_retrieval.save_results_to_npz(output_data_dir, save_name,
+                                                                             upm=upm_mod_hv, vpm=vpm_mod_hv, apm=apm_mod_hv, rpm=rpm_mod_hv, 
+                                                                             hpm=hpm_mod_hv, ssim=ssim_mod_hv, lon2pm=lon2pm_mod_hv, 
+                                                                             lat2pm=lat2pm_mod_hv, gpi1=gpi1_mod_hv, gpi2=gpi2_mod_hv)
     
     #======================================================================
     # 10. Comparing sar and model drift data.

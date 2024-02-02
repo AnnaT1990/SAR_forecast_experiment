@@ -215,7 +215,20 @@ def run_pattern_matching(plots_dir, x, y, lon1pm, lat1pm, n1, c1, r1, n2, c2, r2
 
     return upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm
     
-
+def plot_array(plots_dir, name, array, x, y):
+    fig = plt.figure(figsize=(8, 8))
+    plt.title(f"{name}")  
+    plt.imshow(array, extent=[x.min(), x.max(), y.min(), y.max()])
+    plt.colorbar()
+    plt.xlim([x.min()-10000, x.max()-210000])
+    plt.ylim([y.min()+110000, y.max()-160000])
+    plt.tight_layout()
+    fig.set_facecolor('white')
+    single_save_path = os.path.join(plots_dir, f"{name}.png")
+    plt.savefig(single_save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    
 def combine_based_on_hessian(output_dir_name, folder_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh,
                   upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv):
     """
@@ -475,6 +488,7 @@ def plot_filter_results(drift_save_path, x, y, hpm, upm, vpm, gpi1, gpi2, disp_l
     return disp_min, disp_max
 
 def save_results_to_npz(output_dir, save_name, **kwargs):
+    os.makedirs(output_dir, exist_ok=True) 
     
     # Define the path for the .npz file
     save_path = os.path.join(output_dir, f"{save_name}.npz")

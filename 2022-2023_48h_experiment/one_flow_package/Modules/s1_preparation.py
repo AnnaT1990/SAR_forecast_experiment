@@ -100,10 +100,19 @@ class S1Image:
         self.id = match.group('product_id')
         self.HH_tif_filepath = self.find_hh_tif_filepath(self.filename, path_to_HH_files, S1_safe_regex, S1_prod_regex)
         self.HV_tif_filepath = self.find_hv_tif_filepath(self.filename, path_to_HV_files, S1_safe_regex, S1_prod_regex)
+        self.abs_orbit = int(match.group('absolute_orbit'))
+        self.mission_id = match.group('mission')
+        if self.mission_id == "A":
+            self.rel_orbit = (self.abs_orbit - 73) % 175 + 1
+        elif self.mission_id == "B":
+            self.rel_orbit = (self.abs_orbit - 27) % 175 + 1
+        else:
+            self.rel_orbit = None
         
+         
         
     def __repr__(self):
-        return f"S1Image(ID={self.id}, timestamp={self.timestamp.strftime('%Y%m%dT%H%M%S')})"
+        return f"S1Image(ID={self.id}, timestamp={self.timestamp.strftime('%Y%m%dT%H%M%S')}, relative_orbit = {self.rel_orbit})"
 
     
         

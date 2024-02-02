@@ -35,7 +35,11 @@ safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/
 
 #output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/batch_output'
 #output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/52-82_orbit_2022-2023_batch_output_combined_dist'
-output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/51-82_masked_output_experiment'
+#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/51-82_masked_output_experiment'
+
+output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/border_200_51-82_reverse_pm_for_distortion_experiment'
+
+
 
 input_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/one_flow_input'
 
@@ -51,8 +55,8 @@ S1_prod_regex = (r'S1[AB]{1}_EW_GRDM_1[A-Z]{3}_(?P<start_timestamp>[0-9]{8}T[0-9
                 r'(?P<polarisation>H[HV]{1})_(?P<resolution>[0-9]{1,4})')
 
 # Regular expression for matching SAFE formatted Sentinel-1 file names
-S1_safe_regex = (r'S1[AB]{1}_EW_GRDM_1[A-Z]{3}_(?P<start_timestamp>[0-9]{8}T[0-9]{6})_'
-                r'[0-9]{8}T[0-9]{6}_[0-9]{6}_[0-9A-Z]{6}_(?P<product_id>[0-9A-Z]{4})')
+S1_safe_regex = (r'S1(?P<mission>[AB]{1})_EW_GRDM_1[A-Z]{3}_(?P<start_timestamp>[0-9]{8}T[0-9]{6})_'
+                r'[0-9]{8}T[0-9]{6}_(?P<absolute_orbit>[0-9]{6})_[0-9A-Z]{6}_(?P<product_id>[0-9A-Z]{4})')
 
 
 # Compile the regular expression for matching Sentinel file names.

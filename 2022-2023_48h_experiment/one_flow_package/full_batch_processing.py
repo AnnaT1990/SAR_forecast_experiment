@@ -1,7 +1,15 @@
+"""
+The script processes pairs of SAR images for the experiment of quality assessment of the sea ice condition forecasting using model drift data. It begins by pairing SAR images based on their timestamps and prepares them for analysis. The main steps include:
+
+-Preparing SAR Pairs: Collects and pairs SAR images based on the time difference between their captures (SAR1 and SAR2 in each pair).
+-SAR Drift Retrieval: Calculates the drift between SAR image pairs using feature tracking and pattern matching techniques.
+-Cumulative Model Drift Calculation: Integrates hourly model data to compute cumulative drift over the period between the two SAR images.
+-Warping SAR Images: Utilizes calculated drift fields to warp the first SAR image, projecting its future state for the moment at SAR2 retrivial.
+-Quality Assessment: Compares the warped SAR image (SAR1 predicted) with the SAR2 and calculates distortion parameters to assess the quality of the warping process.
+"""
+
 import sys
 sys.path.append("./modules")
-
-
 
 # Import general modules
 from nansat import Nansat, Domain, NSR
@@ -47,7 +55,7 @@ from io import StringIO
 
 # For ignoring some warnings
 import warnings
-# Ignore the runtime warnings related to 'Mean of empty slice' wen calculate rolling average
+# Ignore the runtime warnings related to 'Mean of empty slice' when calculate rolling average
 warnings.filterwarnings('ignore', category=RuntimeWarning, message='Mean of empty slice')
 
 #======================================================================

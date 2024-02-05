@@ -4,7 +4,7 @@
 
 ## Modifications to the Package
 
-This repository hosts a modified version of the sea_ice_drift. The Docker image has been updated to better suit specific processing needs in SAR forecasting. Key modifications include:
+This repository hosts a modified version of the sea_ice_drift. The Dockerfile has been updated for Docker image to better suit specific processing needs in SAR forecasting. Key modifications include:
 
 - **Enhanced Functionality**: The updated Docker image now supports processing model data within the same image and executes the warping algorithm based on the Chalmers alignment algorithm.
 - **Additional Packages**:

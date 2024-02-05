@@ -2,7 +2,32 @@
 [![Coverage Status](https://coveralls.io/repos/nansencenter/sea_ice_drift/badge.svg?branch=master)](https://coveralls.io/r/nansencenter/sea_ice_drift)
 [![DOI](https://zenodo.org/badge/46479183.svg)](https://zenodo.org/badge/latestdoi/46479183)
 
-## The updated Docker image (by Anna Telegina) includes a few extra pip-installed packages. It allows processing within the same image model data and running the warping algorithm (based on Chalmers alignment algorithm) for SAR forecasting purposes. Packages pandas and xarray were added for model data processing. Scikit-image package was added for running Chalmers warping algorithm. Other modules would be imported locally for each container as they might be changed
+## Modifications to the Package
+
+This repository hosts a modified version of the sea_ice_drift. The Docker image has been updated to better suit specific processing needs in SAR forecasting. Key modifications include:
+
+- **Enhanced Functionality**: The updated Docker image now supports processing model data within the same image and executes the warping algorithm based on the Chalmers alignment algorithm.
+- **Additional Packages**:
+  - `pandas` and `xarray` for model data processing.
+  - `scikit-image` for executing the Chalmers warping algorithm.
+- **Local Imports**: Other modules are imported locally for each container to ensure flexibility, as they might change based on processing requirements.
+
+The modifications were made by [Anna Telegina](https://github.com/AnnaT1990) to tailor the package more closely to project-specific needs.More packages will be added soon.
+
+## Acknowledgements
+
+This project builds upon the work by [Anton Korosov](https://github.com/akorosov) at the [Nansen Center](https://github.com/nansencenter). I am grateful for their foundational contributions to the original [sea_ice_drift](https://github.com/nansencenter/sea_ice_drift) package.
+
+## Original README
+
+Below is the original README from the [sea_ice_drift](https://github.com/nansencenter/sea_ice_drift) repository. The content has been preserved to provide context and comprehensive information about the original package.
+
+---
+
+(Original README content)
+
+---
+
 
 ## Sea ice drift from Sentinel-1 SAR data
 

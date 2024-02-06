@@ -11,7 +11,7 @@ Copyright :   (c) CIRFA 2024
 - [Usage example](#usage)
 - [Configuration](#configuration)
 - [Dependencies](#dependencies)
-- [License](#license)
+
 
 ## Description
 

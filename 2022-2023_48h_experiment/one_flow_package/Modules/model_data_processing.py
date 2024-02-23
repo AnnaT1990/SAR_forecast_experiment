@@ -422,7 +422,6 @@ def plot_model_drift_gpi_results(drift_plot_save_path, x, y, hpm, upm, vpm, gpi2
 
     plt.tight_layout
     
-    plt.tight_layout
 
     # Save the figure without displaying it
     save_path = os.path.join(drift_plot_save_path, f"Model_vs_SAR_drift.png")

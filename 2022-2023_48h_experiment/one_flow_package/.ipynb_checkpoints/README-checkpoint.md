@@ -71,17 +71,17 @@ This command:
 docker run -d --name 2022-2023_48h_experiment -p 8888:8888 -v "C:\Users\<username>\OneDrive - UiT Office 365\Documents\GitHub\SAR_forecast_experiment:/home/jovyan/work" -v "C:\Users\<username>\OneDrive - UiT Office 365\Documents\data_for_experiments:/home/jovyan/data" sar_forecast_experiment
 
 Where:
-# Start a container in the background (detached)
-docker run -d `
-  # Give the container a memorable name so you can start/stop it later
-  --name 2022-2023_48h_experiment `
-  # Map host port 8888 -> container port 8888 (Jupyter listens on 8888 in the container)
-  -p 8888:8888 `
-  # Mount your local GitHub repo into the container at /home/jovyan/work (Jupyter’s working area)
-  -v "C:\Users\<username>\OneDrive - UiT Office 365\Documents\GitHub\SAR_forecast_experiment:/home/jovyan/work" `
-  # Mount your local data folder into the container at /home/jovyan/data
-  -v "C:\Users\<username>\OneDrive - UiT Office 365\Documents\data_for_experiments:/home/jovyan/data" `
-  # Use the image you built earlier
+Start a container in the background (detached)
+    docker run -d
+Give the container a memorable name so you can start/stop it later
+    --name 2022-2023_48h_experiment
+Map host port 8888 -> container port 8888 (Jupyter listens on 8888 in the container)
+  -p 8888:8888
+Mount your local GitHub repo into the container at /home/jovyan/work (Jupyter’s working area)
+  -v "C:\Users\<username>\OneDrive - UiT Office 365\Documents\GitHub\SAR_forecast_experiment:/home/jovyan/work" 
+Mount your local data folder into the container at /home/jovyan/data
+  -v "C:\Users\<username>\OneDrive - UiT Office 365\Documents\data_for_experiments:/home/jovyan/data" 
+Use the image you built earlier
   sar_forecast_experiment
 
 

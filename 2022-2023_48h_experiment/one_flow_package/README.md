@@ -17,11 +17,15 @@ Copyright :   (c) CIRFA 2024
 
 The script processes pairs of SAR images for the experiment of quality assessment of the sea ice condition forecasting using model drift data. It begins by pairing SAR images based on their timestamps and prepares them for analysis. The main steps include:
 
--Preparing SAR Pairs: Collects and pairs SAR images based on the time difference between their captures (SAR1 and SAR2 in each pair).
--SAR Drift Retrieval: Calculates the drift between SAR image pairs using feature tracking and pattern matching techniques.
--Cumulative Model Drift Calculation: Integrates hourly model data to compute cumulative drift over the period between the two SAR images.
--Warping SAR Images: Utilizes calculated drift fields to warp the first SAR image, projecting its future state for the moment at SAR2 retrivial.
--Quality Assessment: Compares the warped SAR image (SAR1 predicted) with the SAR2 and calculates distortion parameters to assess the quality of the warping process.
+- Preparing SAR Pairs: Collects and pairs SAR images based on the time difference between their captures (SAR1 and SAR2 in each pair).
+
+- SAR Drift Retrieval: Calculates the drift between SAR image pairs using feature tracking and pattern matching techniques.
+
+- Cumulative Model Drift Calculation: Integrates hourly model data to compute cumulative drift over the period between the two SAR images.
+
+- Warping SAR Images: Utilizes calculated drift fields to warp the first SAR image, projecting its future state for the moment at SAR2 retrivial.
+
+- Quality Assessment: Compares the warped SAR image (SAR1 predicted) with the SAR2 and calculates distortion parameters to assess the quality of the warping process.
 
 ## Installation
 
@@ -84,11 +88,11 @@ Map host port 8888 -> container port 8888 (Jupyter listens on 8888 in the contai
 
   -p 8888:8888
   
-Mount your local GitHub repo into the container at /home/jovyan/work (Jupyter’s working area)
+Mount your local GitHub repo Ilinked to online version) into the container at /home/jovyan/work (Jupyter’s working area) to keep track of script versions and share them easily
 
   -v "C:\Users\<username>\OneDrive - UiT Office 365\Documents\GitHub\SAR_forecast_experiment:/home/jovyan/work" 
   
-Mount your local data folder into the container at /home/jovyan/data
+Mount your local data folder into the container at /home/jovyan/data 
 
   -v "C:\Users\<username>\OneDrive - UiT Office 365\Documents\data_for_experiments:/home/jovyan/data" 
   

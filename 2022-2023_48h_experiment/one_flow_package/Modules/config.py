@@ -31,11 +31,7 @@ path_to_HV_files = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_im
 # Directory containing the SAFE formatted Sentinel-1 images
 
 safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe'
-#safe_folder = '/home/jovyan/experiment_data/2022-2023_48h_experiment/SAR_images/safe_test'
 
-#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/batch_output'
-#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/52-82_orbit_2022-2023_batch_output_combined_dist'
-#output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/51-82_masked_output_experiment'
 
 output_folder =  '/home/jovyan/experiment_data/2022-2023_48h_experiment/border_200_51-82_reverse_pm_for_distortion_experiment'
 

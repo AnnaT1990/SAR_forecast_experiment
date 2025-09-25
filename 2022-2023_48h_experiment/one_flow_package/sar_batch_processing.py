@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import config
 import s1_preparation
 import domains_preparation
-import SAR1_SAR2_drift_retrivial
+import SAR1_SAR2_drift_retrieval
 import warping_with_domain
 import model_data_proces
 
@@ -138,10 +138,10 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
    
     # Run feature tracking and plot results 
-    c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv)
+    c1_hv, r1_hv, c2_hv, r2_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hv, n2_hv, plots_dir_hv)
     
     #Run pattern matching and plot results
-    upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(plots_dir_hv, x, y, 
+    upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(plots_dir_hv, x, y, 
                                                                lon1pm, lat1pm, n1_hv, c1_hv, r1_hv, n2_hv, c2_hv, r2_hv, srs, 
                                                                min_border=200,
                                                                max_border=200,
@@ -153,10 +153,10 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
     # HH Processing
     # Run feature tracking and plot results 
-    c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrivial.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh)
+    c1_hh, r1_hh, c2_hh, r2_hh = SAR1_SAR2_drift_retrieval.run_feature_tracking(n1_hh, n2_hh, plots_dir_hh)
     
     #Run pattern matching and plot results
-    upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh = SAR1_SAR2_drift_retrivial.run_pattern_matching(plots_dir_hh, x, y, 
+    upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh = SAR1_SAR2_drift_retrieval.run_pattern_matching(plots_dir_hh, x, y, 
                                                                lon1pm, lat1pm, n1_hh, c1_hh, r1_hh, n2_hh, c2_hh, r2_hh,srs, 
                                                                min_border=200,
                                                                max_border=200,
@@ -169,7 +169,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     # 3.3. Get combined drift and all textural parameters
     
     # Combining hh and hv results based on hessian threshold
-    upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm = SAR1_SAR2_drift_retrivial.combine_hh_hv(output_dir_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh,
+    upm, vpm, apm, rpm, hpm, ssim, lon2pm, lat2pm = SAR1_SAR2_drift_retrieval.combine_hh_hv(output_dir_name, x, y, upm_hh, vpm_hh, apm_hh, rpm_hh, hpm_hh, ssim_hh, lon2pm_hh, lat2pm_hh,
                                   upm_hv, vpm_hv, apm_hv, rpm_hv, hpm_hv, ssim_hv, lon2pm_hv, lat2pm_hv)
    
     # 3.4.  Filter drift data with the good pixel indices based on hessian and neighbor thresholds.
@@ -179,16 +179,16 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     #    - gpi2: Good pixel index combining hessian and neighbors count 
 
     
-    gpi1, gpi2 = SAR1_SAR2_drift_retrivial.get_good_pixel_indices(hpm, h_threshold=hessian, neighbors_threshold=neighbors)
+    gpi1, gpi2 = SAR1_SAR2_drift_retrieval.get_good_pixel_indices(hpm, h_threshold=hessian, neighbors_threshold=neighbors)
     
         
     # Plot the filtering results
-    drift_save_path, sar_disp_min, sar_disp_max = SAR1_SAR2_drift_retrivial.plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2,disp_legend_min, disp_legend_max, hessian, neighbors)
+    drift_save_path, sar_disp_min, sar_disp_max = SAR1_SAR2_drift_retrieval.plot_filter_results(output_dir_name, x, y, hpm, upm, vpm, gpi1, gpi2,disp_legend_min, disp_legend_max, hessian, neighbors)
     
     
     #  Save final reference drift, its parameters and filtering arrays to npy files
     save_name = 'sar_drift_output'
-    sar_drift_output_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
+    sar_drift_output_path = SAR1_SAR2_drift_retrieval.save_sar_drift_results(output_dir_name, save_name,
                                                                              upm=upm, vpm=vpm, apm=apm, rpm=rpm, 
                                                                              hpm=hpm, ssim=ssim, lon2pm=lon2pm, 
                                                                              lat2pm=lat2pm, gpi1=gpi1, gpi2=gpi2)
@@ -240,10 +240,10 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
         
     # 5.3. Calculate realibility indexes 
     # 5.3.1. Run feature tracking and plot results 
-    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, comparison_dir)
+    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n_s1_predict, n_s2, comparison_dir)
     
     # 5.3.2. Run pattern matching and plot results
-    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(comparison_dir, x, y, 
+    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(comparison_dir, x, y, 
                                                                lon1pm, lat1pm, n_s1_predict, c1_alg_hv, r1_alg_hv, n_s2, c2_alg_hv, r2_alg_hv, srs, 
                                                                min_border=200,
                                                                max_border=200,
@@ -255,7 +255,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
     # 5.4. Save comparison results, its parameters and filtering arrays to npy files
     save_name = 'sar_distort_error_data'
-    sar_drift_output_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
+    sar_drift_output_path = SAR1_SAR2_drift_retrieval.save_sar_drift_results(output_dir_name, save_name,
                                                                              upm=upm_alg_hv, vpm=vpm_alg_hv, apm=apm_alg_hv, rpm=rpm_alg_hv, 
                                                                              hpm=hpm_alg_hv, ssim=ssim_alg_hv, lon2pm=lon2pm_alg_hv, 
                                                                              lat2pm=lat2pm_alg_hv, gpi1=gpi1, gpi2=gpi2)

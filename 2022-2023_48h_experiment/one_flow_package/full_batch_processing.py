@@ -9,7 +9,7 @@ The script processes pairs of SAR images for the experiment of quality assessmen
 """
 
 import sys
-sys.path.append("./modules")
+sys.path.append("./Modules")
 
 # Import general modules
 from nansat import Nansat, Domain, NSR

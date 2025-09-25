@@ -1,5 +1,28 @@
+"""
+Model Batch Processing
+----------------------
+
+This script processes pairs of Sentinel-1 SAR images together with model drift data 
+to evaluate sea-ice motion forecasts. It uses the `Modules/` package to:
+
+1. Collect and pair Sentinel-1 SAFE files (within 50 hours).  
+2. Prepare Nansat objects and domains (SAR + model grids).  
+3. Retrieve and integrate model drift fields.  
+4. Warp SAR imagery with model displacement.  
+5. Compare forecasted SAR against observed SAR using feature tracking and 
+   pattern matching.  
+
+Results (plots, displacement fields, metrics) are saved to the configured output 
+directory.  
+
+Dependencies: Nansat, NumPy, Pandas, SciPy, Matplotlib, plus internal modules 
+(config, s1_preparation, domains_preparation, model_data_processing, 
+SAR1_SAR2_drift_retrieval, warping_with_domain).
+"""
+
+
 import sys
-sys.path.append("./modules")
+sys.path.append("./Modules")
 
 
 
@@ -20,9 +43,9 @@ import pandas as pd
 import config
 import s1_preparation
 import domains_preparation
-import SAR1_SAR2_drift_retrivial
+import SAR1_SAR2_drift_retrieval
 import warping_with_domain
-import model_data_proces
+import model_data_processing
 
 # Import variables
 from config import path_to_HH_files, path_to_HV_files, safe_folder 
@@ -166,7 +189,7 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     
     # 3.7. Save final drift, its parameters to npy files
     save_name = 'mod_drift_output'
-    sar_drift_output_path = SAR1_SAR2_drift_retrivial.save_sar_drift_results(output_dir_name, save_name,
+    sar_drift_output_path = SAR1_SAR2_drift_retrieval.save_sar_drift_results(output_dir_name, save_name,
                                                                              model_u=model_u, model_v=model_v,
                                                                          y2=y2, x2=x2)
 
@@ -223,10 +246,10 @@ for index, pair in enumerate(sar_pairs, start=1):  # start=1 to have human-frien
     # Calculate realibility indexes 
 
     # 5.4. Run feature tracking and plot results 
-    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrivial.run_feature_tracking(n_s1_predict, n_s2, comparison_dir)
+    c1_alg_hv, r1_alg_hv, c2_alg_hv, r2_alg_hv = SAR1_SAR2_drift_retrieval.run_feature_tracking(n_s1_predict, n_s2, comparison_dir)
 
     # 5.5. Run pattern matching and plot results
-    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrivial.run_pattern_matching(comparison_dir, x, y, 
+    upm_alg_hv, vpm_alg_hv, apm_alg_hv, rpm_alg_hv, hpm_alg_hv, ssim_alg_hv, lon2pm_alg_hv, lat2pm_alg_hv = SAR1_SAR2_drift_retrieval.run_pattern_matching(comparison_dir, x, y, 
                                                                lon1pm, lat1pm, n_s1_predict, c1_alg_hv, r1_alg_hv, n_s2, c2_alg_hv, r2_alg_hv, srs, 
                                                                min_border=200,
                                                                max_border=200,

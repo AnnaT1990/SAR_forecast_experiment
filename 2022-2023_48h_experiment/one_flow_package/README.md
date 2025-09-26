@@ -9,8 +9,7 @@ Copyright :   (c) CIRFA 2024
 - [Description](#description)
 - [Installation](#installation)
 - [Usage example](#usage)
-- [Configuration](#configuration)
-- [Dependencies](#dependencies)
+
 
 
 ## Description

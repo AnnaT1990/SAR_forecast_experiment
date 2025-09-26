@@ -42,7 +42,7 @@ Overview
 
 - Docker image name: sar_forecast_experiment
 
-- Default container name: seaice_experiment (In my case main experiment container included the period of time SAR images were downloaded for: 2022-2023_48h_experiment.)
+- Default container name: seaice_experiment (In my case main experiment container included the period of time SAR images were downloaded for: 2022-2023_experiment.)
 
 
 1. Install Docker Desktop (Windows)
@@ -134,8 +134,8 @@ Experiment isolation: Create multiple named containers (e.g., 2022-2023_48h_expe
 
 ### Updating configuration file
 
-config.py
-The config.py file contains user-defined parameters. Here its structure and parameters that might be updated:
+
+The config.py file in folder Modules contains user-defined parameters. Here its structure and parameters that might be updated:
 
 - Directories and File Paths: Update the paths to the directories containing your SAR image files. You can set path_to_HH_files, path_to_HV_files, safe_folder, output_folder, and input_folder according to your file structure.
 
@@ -149,13 +149,17 @@ The config.py file contains user-defined parameters. Here its structure and para
 
 The main script **`full_batch_processing.py`** runs the complete pipeline for each pair of Sentinel-1 SAR images.  
 
+
 ### What the script does
 1. Collects and pairs Sentinel-1 SAFE files (SAR1, SAR2).  
 2. Defines SAR and model domains at different resolutions.  
 3. Retrieves and integrates model drift fields for the SAR time period.  
-4. Warps SAR1 using model drift and compares with observed SAR2.  
-5. Runs feature tracking and pattern matching on HH and HV polarisations.  
-6. Produces plots, metrics, and `.npz` data files for each SAR pair.  
+4. Estimates drift directly between SAR1 and SAR2 using feature tracking and pattern matching.  
+5. Warps SAR1 twice:  
+   - once using the model drift fields,  
+   - once using the retrieved SAR drift fields.  
+6. Compares both warped SAR1 images against observed SAR2.  
+7. Produces plots, metrics, and `.npz` data files for each SAR pair.
 
 ### What outputs you get
 
@@ -189,7 +193,8 @@ Inside are several subdirectories with plots and data:
 
 ### Notes
 - All output paths are configured in `Modules/config.py`.  
-- Notebooks are included for additional visualisation and deformation analysis but are not required to reproduce the main results.  
+- Notebooks are included for additional visualisation, extr a processing and deformation analysis but are not required to reproduce the main results.  
+
 ## References & Related Projects
 
 - **SAR image warping (Nansen Center)**:  
@@ -200,6 +205,6 @@ Inside are several subdirectories with plots and data:
 
 - **Model data access**:  
   The download links originally used are no longer active.  
-  For updated access, contacting Anton and  the Met Office if needed.
+  For updated access, contacting Nansen Center and  the Met Office if needed.
 
 ```

@@ -9,6 +9,8 @@ Copyright :   (c) CIRFA 2024
 - [Description](#description)
 - [Installation](#installation)
 - [Usage example](#usage)
+- [References](#references)
+
 
 
 

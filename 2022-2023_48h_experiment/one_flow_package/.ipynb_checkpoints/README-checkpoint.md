@@ -180,15 +180,24 @@ Inside are several subdirectories with plots and data:
 #### Example tree for one SAR pair
 
 <output_folder>/
-└── 20221015T080155_20221017T074535//
-├── distort_error_plots//
-├── drift_vector_fields_plots//
-├── hh_hv_pm_plots//
-├── output_data//
-├── profiling//
-├── warped_arrays_plots//
-├── warped_gpi_plots//
-└── warped_hpm_plots//
+└── 20221015T080155_20221017T074535
+
+├── distort_error_plots
+
+├── drift_vector_fields_plots
+
+├── hh_hv_pm_plots
+
+├── output_data
+
+├── profiling
+
+├── warped_arrays_plots
+
+├── warped_gpi_plots
+
+└── warped_hpm_plots
+
 
 
 ### Notes

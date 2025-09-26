@@ -42,7 +42,7 @@ Overview
 
 - Docker image name: sar_forecast_experiment
 
-- Default container name: seaice_experiment (In my case main experiment container included the period of time SAR images were downloaded for: 2022-2023_experiment.)
+- Default container name: seaice_experiment (In my case main experiment container included the period of time SAR images were downloaded for: 2022-2023_48h_experiment.)
 
 
 1. Install Docker Desktop (Windows)

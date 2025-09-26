@@ -22,7 +22,7 @@ The script processes pairs of SAR images for the experiment of quality assessmen
 
 - Cumulative Model Drift Calculation: Integrates hourly model data to compute cumulative drift over the period between the two SAR images.
 
-- Warping SAR Images: Utilizes calculated drift fields to warp the first SAR image, projecting its future state for the moment at SAR2 retrivial.
+- Warping SAR Images: Utilizes calculated drift fields to warp the first SAR image, projecting its future state for the moment at SAR2 retrieval.
 
 - Quality Assessment: Compares the warped SAR image (SAR1 predicted) with the SAR2 and calculates distortion parameters to assess the quality of the warping process.
 
@@ -157,26 +157,47 @@ The main script **`full_batch_processing.py`** runs the complete pipeline for ea
 
 ### What outputs you get
 
-For each SAR pair, the script creates a folder named after the acquisition times (e.g. `20221015T080155_20221017T074535/`). Inside are several subfolders with graphs and data:
+For each SAR pair, the script creates a subfolder named after the acquisition times (e.g. `20221015T080155_20221017T074535/`).  
+Inside are several subdirectories with plots and data:
 
-- **Warping results**  
-  Plots of warped SAR1 vs observed SAR2.
-  
-- **Drift vector fields**  
-  Quiver plots comparing SAR-derived drift with model drift.  
-  Example:  
+| Folder name                   | Contents                                                                 |
+|-------------------------------|--------------------------------------------------------------------------|
+| **distort_error_plots/**      | Distortion metrics (correlation maps, SSIM, Hessian-based errors).        |
+| **drift_vector_fields_plots/**| Vector field plots (quiver arrows showing displacement).                  |
+| **hh_hv_pm_plots/**           | Pattern matching plots for HH and HV polarisations.                       |
+| **output_data/**              | `.npz` files with displacement arrays (`u`, `v`) and coordinates (`x2`,`y2`). |
+| **profiling/**                | Runtime profiling and performance logs.                                  |
+| **warped_arrays_plots/**      | Comparisons of warped vs observed arrays.                                |
+| **warped_gpi_plots/**         | Warped SAR1 vs SAR2 comparisons using the GPI method.                     |
+| **warped_hpm_plots/**         | Warped SAR1 vs SAR2 comparisons using the HPM method.                     |
 
-- **Distortion / SSIM maps**  
-  Quantitative evaluation of forecast quality.  
- 
-- **Pattern matching results**  
-  Output parameters from HH or HV polarisation.   
+#### Example tree for one SAR pair
 
-- **Data files**  
-  `.npz` files with displacement arrays (`u`, `v`) and coordinates.   
+<output_folder>/
+└── 20221015T080155_20221017T074535/
+├── distort_error_plots/
+├── drift_vector_fields_plots/
+├── hh_hv_pm_plots/
+├── output_data/
+├── profiling/
+├── warped_arrays_plots/
+├── warped_gpi_plots/
+└── warped_hpm_plots/
+
 
 ### Notes
 - All output paths are configured in `Modules/config.py`.  
 - Notebooks are included for additional visualisation and deformation analysis but are not required to reproduce the main results.  
+## References & Related Projects
+
+- **SAR image warping (Nansen Center)**:  
+  [https://github.com/nansencenter/sar_image_warping](https://github.com/nansencenter/sar_image_warping)
+
+- **Original Nansen sea ice drift algorithm (Anton’s repository)**:  
+  [https://github.com/nansencenter/sea_ice_drift](https://github.com/nansencenter/sea_ice_drift)
+
+- **Model data access**:  
+  The download links originally used are no longer active.  
+  For updated access, contacting Anton and  the Met Office if needed.
 
 ```

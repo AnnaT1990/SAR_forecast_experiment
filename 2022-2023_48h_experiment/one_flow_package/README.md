@@ -146,6 +146,38 @@ The config.py file contains user-defined parameters. Here its structure and para
 
 ## Usage
 
-```
-add using an example of one pair 
+The main script **`full_batch_processing.py`** runs the complete pipeline for each pair of Sentinel-1 SAR images.  
+
+### What the script does
+1. Collects and pairs Sentinel-1 SAFE files (SAR1, SAR2).  
+2. Defines SAR and model domains at different resolutions.  
+3. Retrieves and integrates model drift fields for the SAR time period.  
+4. Warps SAR1 using model drift and compares with observed SAR2.  
+5. Runs feature tracking and pattern matching on HH and HV polarisations.  
+6. Produces plots, metrics, and `.npz` data files for each SAR pair.  
+
+### What outputs you get
+
+For each SAR pair, the script creates a folder named after the acquisition times (e.g. `20221015T080155_20221017T074535/`). Inside are several subfolders with graphs and data:
+
+- **Warping results**  
+  Plots of warped SAR1 vs observed SAR2.
+  
+- **Drift vector fields**  
+  Quiver plots comparing SAR-derived drift with model drift.  
+  Example:  
+
+- **Distortion / SSIM maps**  
+  Quantitative evaluation of forecast quality.  
+ 
+- **Pattern matching results**  
+  Output parameters from HH or HV polarisation.   
+
+- **Data files**  
+  `.npz` files with displacement arrays (`u`, `v`) and coordinates.   
+
+### Notes
+- All output paths are configured in `Modules/config.py`.  
+- Notebooks are included for additional visualisation and deformation analysis but are not required to reproduce the main results.  
+
 ```

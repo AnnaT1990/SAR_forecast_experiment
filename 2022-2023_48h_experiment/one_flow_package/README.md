@@ -34,7 +34,7 @@ Running with Docker
 
 Overview
 
-- Repository "sea_ice_docker_upgrade" contains everything needed to build a Docker image and run JupyterLab for SAR drift experiments:
+- Repository "sea_ice_docker_upgrade" (https://github.com/AnnaT1990/SAR_forecast_experiment/tree/main/sea_ice_docker_upgrade) contains everything needed to build a Docker image and run JupyterLab for SAR drift experiments:
 
 - Repository name: sea_ice_docker_upgrade
 
